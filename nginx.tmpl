@@ -138,7 +138,7 @@ server {
 }
 {{ else }}
 
-{{ if (eq .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED. true) }}
+{{ if (eq .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED true) }}
 
 server {
     {{ if (eq .Env.AUTO_REDIRECT_DIRECTION 0) }}
