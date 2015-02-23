@@ -32,10 +32,13 @@ ENV GLOB_MAX_BODY_SIZE 10m
 # set default msg set within basic auth msg
 ENV GLOB_AUTH_MSG "Restricted :"
 
+# support intermediate and CA-chained SSL certificate bundles
+ENV GLOB_SSL_CERT_BUNDLE_ENABLED "false"
+
 # enable bundle support to provide nginx CA chain
 # have a look at http://nginx.org/en/docs/http/configuring_https_servers.html#chains
 # for more info
-ENV GLOB_SSL_CERT_BUNDLE_INFIX ""
+ENV GLOB_SSL_CERT_BUNDLE_INFIX ".bundle"
 
 # set default session timeout
 ENV GLOB_SSL_SESSION_TIMEOUT 5m
@@ -45,16 +48,16 @@ ENV GLOB_SSL_SESSION_CACHE 50m
 
 # activate SPDY support
 # more info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
-ENV GLOB_SPDY_ENABLED false
+ENV GLOB_SPDY_ENABLED "false"
 
 # default return code for errors
 ENV GLOB_HTTP_NO_SERVICE 503
 
 # enable some kind of prefix redirection
-ENV AUTO_REDIRECT_WITH_PREFIX_ENABLED false
+ENV AUTO_REDIRECT_WITH_PREFIX_ENABLED "false"
 
 # set prefix to be used for auto redirect
-ENV AUTO_REDIRECT_PREFIX "www"
+ENV AUTO_REDIRECT_PREFIX www
 
 # set direction
 # - 0: redirect from prefix to non-prefix

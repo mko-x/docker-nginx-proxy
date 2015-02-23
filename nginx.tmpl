@@ -1,3 +1,18 @@
+# Generated nginx site conf
+{{/* MAPPING of configuration env vars to file globals avoiding problems if nesting multiple instances of nginx-proxy. */}}
+{{ $infix := "" }}
+{{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false") }}
+{{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
+{{ end }}
+
+{{ $autoRedirectEnabled := 0 }}
+{{ if (ne .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED "false") }}
+{{ $autoRedirectEnabled := 1 }}
+{{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
+{{ end }}
+
+{{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }};
+
 # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
 # scheme used to connect to this server
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
@@ -33,10 +48,11 @@ proxy_set_header X-Real-IP $remote_addr;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
 
+# Catching any if there is no real hostname
 server {
-	listen 80 default_server;
-	server_name _; # This is just an invalid value which will never trigger on a real hostname.
-	return {{ .Env.GLOB_HTTP_NO_SERVICE }};
+        listen 80 default_server;
+        server_name _;
+        return {{ $unavailableService }};
 }
 
 {{/* MAIN VIRTUAL_HOST generation. */}}
@@ -54,8 +70,8 @@ upstream {{ $host }} {
 	{{/* Address/Port count == 1, use the only one */}}
     
 		{{ with $address := index $container.Addresses 0 }}
-            # {{$container.Name}}
-		   server {{ $address.IP }}:{{ $address.Port }};
+        # {{$container.Name}}
+        server {{ $address.IP }}:{{ $address.Port }};
 		{{ end }}
         
 	
@@ -65,8 +81,8 @@ upstream {{ $host }} {
 		{{ range $address := .Addresses }}
         
 		   {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
-		   # {{$container.Name}}
-		   server {{ $address.IP }}:{{ $address.Port }};
+        # {{$container.Name}}
+        server {{ $address.IP }}:{{ $address.Port }};
 		   {{ end }}
            
 		{{ end }}
@@ -80,8 +96,8 @@ upstream {{ $host }} {
 
 			{{ if eq $address.Port "80" }}
             
-			# {{$container.Name}}
-			server {{ $address.IP }}:{{ $address.Port }};
+        # {{$container.Name}}
+        server {{ $address.IP }}:{{ $address.Port }};
 
             {{ $webFallbackSuccess := 1}}
 
@@ -106,38 +122,45 @@ upstream {{ $host }} {
 {{ end }}
 }
 
+{{/* Presetting values. */}}
+{{ $vhostCert := "none" }}
+{{ $certCandidate := "none" }}
+{{ $keyCandidate := "none" }}
+
 {{/* Get the first cert name defined by containers w/ the same vhost */}}
 {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }}
 
 {{ with $tmpCrtFile := replace "rxHostrxBundle" "rxHost" $host -1 }}
-    {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
     {{ $tmpCrtFile := replace $tmpCrtFile "rxBundle" $infix -1 }}
-
     {{/* Get the best matching cert by name for the vhost. Will insert bundled INFIX if given.*/}}
     {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $tmpCrtFile ))}}
 
 {{ end }}
 
-{{/* vhostCert is actually a filename so remove any suffixes since they are added later */}}
-{{ $vhostCert := replace $vhostCert ".crt" "" -1 }}
-{{ $vhostCert := replace $vhostCert ".key" "" -1 }}
+{{ if (ne $vhostCert "none" ) }}
 
-{{/* Use the cert specified on the container or fallback to the best vhost match */}}
-{{ $cert := (coalesce $certName $vhostCert) }}
+    {{/* vhostCert is actually a filename so remove any suffixes since they are added later */}}
+    {{ $vhostCert := replace $vhostCert ".crt" "" -1 }}
+    {{ $vhostCert := replace $vhostCert ".key" "" -1 }}
 
-{{/* KEYFILE substitution*/}}
-{{ with $keyFile := $cert }}
+    {{/* Use the cert specified on the container or fallback to the best vhost match */}}
+    {{ $keyCandidate := (coalesce $certName $vhostCert) }}
 
-{{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_INFIX "" ) }}
-    {{ $tmpReplacement := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
-    {{ $keyFile := replace $cert $tmpReplacement "" -1 }}
+    {{/* KEYFILE substitution*/}}
+    {{ $certCandidate := $keyCandidate }}
+
+    {{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_INFIX "" ) }}
+        {{ $tmpReplacement := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
+        {{ $certCandidate := replace $keyCandidate $tmpReplacement "" -1 }}
+    {{ end }}
+
 {{ end }}
 
 {{/* MAIN server configuration task. */}}
-{{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $keyFile))) }}
+{{ if (and (ne $keyCandidate "") (exists (printf "/etc/nginx/certs/%s.crt" $keyCandidate)) (exists (printf "/etc/nginx/certs/%s.key" $certCandidate))) }}
 {{/* Valid HTTPS certificate and key files found. */}}
 
-{{ if (eq .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED true) }}
+{{ if (ne $autoRedirectEnabled 0) }}
 
 server {
 
@@ -145,14 +168,14 @@ server {
     {{ if (eq .Env.AUTO_REDIRECT_DIRECTION 0) }}
     {{/* Redirect prefixed host to plain host via moved permanently */}}
     
-    server_name  {{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }};
-    rewrite ^(.*) https://{{ $host }}$1 permanent;
+        server_name  {{ $infix }}.{{ $host }};
+        rewrite ^(.*) https://{{ $host }}$1 permanent;
     
     {{ else }}
     {{/* Redirect non-prefixed host to prefixed host via moved permanently */}}
     
-    server_name {{ $host }};
-    rewrite ^(.*) https://{{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }}$1 permanent;
+        server_name {{ $host }};
+        rewrite ^(.*) https://{{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }}$1 permanent;
     
     {{/* AUTO_REDIRECT_DIRECTION end */}}
     {{ end }}
@@ -164,60 +187,60 @@ server {
 
 # enforce ssl if enabled
 server {
-	server_name {{ $host }};
-	rewrite ^(.*) https://{{ $host }}$1 permanent;
+        server_name {{ $host }};
+        rewrite ^(.*) https://{{ $host }}$1 permanent;
 }
 
 # ssl server
 server {
-	server_name {{ $host }};
+        server_name {{ $host }};
     
-    {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
-	listen 443 ssl spdy;
+    {{ if (ne .Env.GLOB_SPDY_ENABLED "false") }}
+        listen 443 ssl spdy;
     {{ else }}
-    listen 443 ssl;
+        listen 443 ssl;
     {{ end }}
     
-	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-	ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA;
 
-	ssl_prefer_server_ciphers on;
-	ssl_session_timeout {{ .Env.GLOB_SSL_SESSION_TIMEOUT }};
-	ssl_session_cache shared:SSL:{{ .Env.GLOB_SSL_SESSION_CACHE }};
+        ssl_prefer_server_ciphers on;
+        ssl_session_timeout {{ .Env.GLOB_SSL_SESSION_TIMEOUT }};
+        ssl_session_cache shared:SSL:{{ .Env.GLOB_SSL_SESSION_CACHE }};
 
-	ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $cert) }};
-	ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $keyFile) }};
+        ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $keyCandidate) }};
+        ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $certCandidate) }};
 
     {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
-    add_header Alternate-Protocol  443:npn-spdy/3;
+        add_header Alternate-Protocol  443:npn-spdy/3;
     {{ end }}
-	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+        add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
 
-	location / {
-		proxy_pass http://{{ $host }};
-		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-		auth_basic	{{ .Env.GLOB_AUTH_MSG }} {{ $host }};
-		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-		{{ end }}
-	}
+        location / {
+            proxy_pass http://{{ $host }};
+            {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+            auth_basic	{{ .Env.GLOB_AUTH_MSG }} {{ $host }};
+            auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+            {{ end }}
+        }
 }
 
 {{/* Valid HTTPS certificate and key files found. end */}}
 {{ else }} 
 {{/* Defaulting to HTTP. */}}
 
-{{ if (eq .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED true) }}
+{{ if (ne $autoRedirectEnabled 0) }}
 
 server {
     {{ if (eq .Env.AUTO_REDIRECT_DIRECTION 0) }}
     
-    server_name  {{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }};
-    rewrite ^(.*) http://{{ $host }}$1 permanent;
+        server_name  {{ $infix }}.{{ $host }};
+        rewrite ^(.*) http://{{ $host }}$1 permanent;
    
     {{ else }}
     
-    server_name {{ $host }};
-    rewrite ^(.*) http://{{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }}$1 permanent;
+        server_name {{ $host }};
+        rewrite ^(.*) http://{{ .Env.AUTO_REDIRECT_PREFIX }}.{{ $host }}$1 permanent;
     
     {{ end }}
 }
@@ -226,32 +249,29 @@ server {
 {{ end }}
 
 server {
-	server_name {{ $host }};
+        server_name {{ $host }};
 
-	location / {
-		proxy_pass http://{{ $host }};
-		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-		auth_basic	{{ .Env.GLOB_AUTH_MSG }}{{ $host }};
-		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-		{{ end }}
-	}
+        location / {
+                proxy_pass http://{{ $host }};
+                {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+                auth_basic	{{ .Env.GLOB_AUTH_MSG }}{{ $host }};
+                auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+                {{ end }}
+        }
 }
 
 server {
-	server_name {{ $host }};
-	listen 443 ssl;
-	return {{ .Env.GLOB_HTTP_NO_SERVICE }};
+        server_name {{ $host }};
+        listen 443 ssl;
+        return {{ $unavailableService }};
 
-	{{ if (and (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
-	ssl_certificate /etc/nginx/certs/default.crt;
-	ssl_certificate_key /etc/nginx/certs/default.key;
-	{{ end }}
+        {{ if (and (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
+        ssl_certificate /etc/nginx/certs/default.crt;
+        ssl_certificate_key /etc/nginx/certs/default.key;
+        {{ end }}
 }
 
 {{/* MAIN server configuration task. end */}}
-{{ end }}
-
-{{/* KEYFILE substitution. end*/}}
 {{ end }}
 
 {{/* MAIN VIRTUAL_HOST generation. end */}}
