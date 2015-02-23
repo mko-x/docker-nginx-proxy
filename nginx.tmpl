@@ -116,7 +116,7 @@ upstream {{ $host }} {
 
 {{/* Use the cert specifid on the container or fallback to the best vhost match */}}
 {{ $cert := (coalesce $certName $vhostCert) }}
-{{ $keyFile := replace $cert .Env.GLOB_SSL_CERT_BUNDLE_INFIX "" -1 }}
+{{ $keyFile := replace $cert "Env.GLOB_SSL_CERT_BUNDLE_INFIX" "" -1 }}
 
 {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $keyFile))) }}
 
