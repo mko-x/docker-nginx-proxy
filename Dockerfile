@@ -29,9 +29,6 @@ WORKDIR /app/
 # set max size within a body
 ENV GLOB_MAX_BODY_SIZE 10m
 
-# set default msg set within basic auth msg
-ENV GLOB_AUTH_MSG "Restricted :"
-
 # support intermediate and CA-chained SSL certificate bundles
 ENV GLOB_SSL_CERT_BUNDLE_ENABLED "false"
 
