@@ -70,7 +70,7 @@ upstream {{ $host }} {
 	{{/* Address/Port count == 1, use the only one */}}
     
 		{{ with $address := index $container.Addresses 0 }}
-        # {{$container.Name}}
+        # {{$container.Name}}.single 
         server {{ $address.IP }}:{{ $address.Port }};
 		{{ end }}
         
@@ -81,7 +81,7 @@ upstream {{ $host }} {
 		{{ range $address := .Addresses }}
         
 		   {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
-        # {{$container.Name}}
+        # {{$container.Name}}.explicit
         server {{ $address.IP }}:{{ $address.Port }};
 		   {{ end }}
            
@@ -96,7 +96,7 @@ upstream {{ $host }} {
 
 			{{ if eq $address.Port "80" }}
             
-        # {{$container.Name}}
+        # {{$container.Name}}.default
         server {{ $address.IP }}:{{ $address.Port }};
 
             {{ $webFallbackSuccess := 1}}
@@ -110,6 +110,7 @@ upstream {{ $host }} {
         {{/* Linking to first port found as last case.*/}}
                 
         {{ with $address := index $container.Addresses 0 }}
+        # {{$container.Name}}.fallthrough
         server {{ $address.IP }}:{{ $address.Port }};
         {{ end }}
         
