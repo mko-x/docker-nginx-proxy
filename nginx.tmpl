@@ -2,6 +2,7 @@
 {{/* MAPPING of configuration env vars to file globals avoiding problems if nesting multiple instances of nginx-proxy. */}}
 {{ $infix := "" }}
 {{ $bundleEnabled := 0 }}
+
 {{ $autoRedirectEnabled := 0 }}
 {{ $prefix := "" }}
 
@@ -113,41 +114,24 @@ upstream {{ $host }} {
 {{ end }}
 }
 
-{{/* Presetting values. */}}
-{{ $certCandidate := "none" }}
-{{ $keyCandidate := "none" }}
-
 {{/* Get the VIRTUAL_PROTO defined by containers w/ the same vhost, falling back to "http" */}}
 {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }}
 
 {{/* Get the first cert name defined by containers w/ the same vhost */}}
 {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }}
 
-{{ $tmpCrtFile := replace "rxHrxB" "rxH" $host -1 }}
-{{ $tmpCrtFile := replace $tmpCrtFile "rxB" $infix -1 }}
-{{/* Get the best matching cert by name for the vhost. Will insert bundled INFIX if given. */}}
-{{ $vhostCert := or (closest (dir "/etc/nginx/certs") (printf "%s.crt" $tmpCrtFile )) "none" }}
+{{/* Get the best matching cert  by name for the vhost. */}}
+{{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}}
 
-{{ if (ne $vhostCert "none" ) }}
+{{/* vhostCert is actually a filename so remove any suffixes since they are added later */}}
+{{ $vhostCert := replace $vhostCert ".crt" "" -1 }}
+{{ $vhostCert := replace $vhostCert ".key" "" -1 }}
 
-    {{/* vhostCert is actually a filename so remove any suffixes since they are added later */}}
-    {{ $vhostCert := replace $vhostCert ".crt" "" -1 }}
-    {{ $vhostCert := replace $vhostCert ".key" "" -1 }}
-
-    {{/* Use the cert specified on the container or fallback to the best vhost match */}}
-    {{ $certCandidate := (coalesce $certName $vhostCert) }}
-
-    {{/* KEYFILE substitution*/}}
-    {{ $keyCandidate := $certCandidate }}
-
-    {{ if (eq $bundleEnabled 1 ) }}
-        {{ $keyCandidate  := replace $keyCandidate $infix "" -1 }}
-    {{ end }}
-
-{{ end }}
+{{/* Use the cert specifid on the container or fallback to the best vhost match */}}
+{{ $cert := (coalesce $certName $vhostCert) }}
 
 {{/* MAIN server configuration task. */}}
-{{ if (and (ne $certCandidate "") (exists (printf "/etc/nginx/certs/%s.crt" $certCandidate)) (exists (printf "/etc/nginx/certs/%s.key" $keyCandidate))) }}
+{{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
 {{/* Valid HTTPS certificate and key files found. */}}
 
 {{ if (eq $autoRedirectEnabled 1) }}
@@ -199,8 +183,20 @@ server {
         ssl_session_timeout {{ .Env.GLOB_SSL_SESSION_TIMEOUT }};
         ssl_session_cache shared:SSL:{{ .Env.GLOB_SSL_SESSION_CACHE }};
 
-        ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certCandidate) }};
-        ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $keyCandidate) }};
+        {{ if (eq $bundleEnabled 1) }}
+        
+        {{ $certBundle := replace "ccccciiiii" "ccccc" $cert -1 }}
+        {{ $certBundle := replace $certBundle "iiiii" $infix -1 }}
+
+        ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
+        
+        {{ else }}
+        
+        ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $cert) }};
+        
+        {{ end }}
+        
+        ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
     {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
         add_header Alternate-Protocol  443:npn-spdy/3;
