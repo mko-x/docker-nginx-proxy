@@ -88,33 +88,19 @@ upstream {{ $host }} {
 		{{ end }}
 	
 	{{ else }}
-    {{/* Try to default to standard web port 80, but check if worked */}}
-    
-        {{ $webFallbackSuccess := 0}}
-	
+    {{/* Try to default to standard web port 80  */}}
+    	
     	{{ range $address := $container.Addresses }}
 
-			{{ if eq $address.Port "80" }}
+            {{ if eq $address.Port "80" }}
             
         # {{$container.Name}}.default
         server {{ $address.IP }}:{{ $address.Port }};
 
-            {{ $webFallbackSuccess := 1}}
+            {{ end }}
 
-			{{ end }}
-
+        {{/* $container.Addresses end */}}
 		{{ end }}
-        
-        {{ if (and (ne $webFallbackSuccess 1) (gt $addrLen 0) ) }}
-        {{/* Default port not found, but VIRTUAL_HOST was given and one ore more addresses specified. Linking to first port found.*/}}
-        {{/* Linking to first port found as last case.*/}}
-                
-        {{ with $address := index $container.Addresses 0 }}
-        # {{$container.Name}}.fallthrough
-        server {{ $address.IP }}:{{ $address.Port }};
-        {{ end }}
-        
-        {{ end }}
 
     {{/* ADRESSING SWITCH. end */}}
 	{{ end }}
