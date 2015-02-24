@@ -1,120 +1,94 @@
 ![nginx 1.7.8](https://img.shields.io/badge/nginx-1.7.8-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
-##Modifications
+#Modifications
 
-To make Jason's nginx-proxy work for me, I changed:
+To make Jason's nginx-proxy more configurable without having to provide custom configs/includes, I added some env vars. All of them change the global behavior of nginx or it's configured servers within the templating engine (starting with "GLOB_"). 
 
-- added rewrite of 'www'-prefixed domains to 301 without prefix for both https and http protocol
+Another aim is to increase performance especially in multiple full ssl based environments.
 
-##Original 
+Last but not least I tried to improve readability and documentation for easier understanding of the image's working principle.
 
-nginx-proxy sets up a container running nginx and [docker-gen][1].  docker-gen generates reverse proxy configs for nginx and reloads nginx when containers are started and stopped.
+Many thanks to Jason for this and lots of other great images.
 
-See [Automated Nginx Reverse Proxy for Docker][2] for why you might want to use this.
+## GLOB_SSL_CERT_BUNDLE_ENABLED
+To ensure CA-chain reliability, some certificate providers deliver some kind of intermediate certificate to guarantee their authority. For nginx this cert and your own cert have to be concatenated to a bundle. 
 
-### Usage
+If enabled you should provide that concatenated certificate additionally to your cert, marked by some kind of insertion between original file (i.e. domain) name.
 
-To run it:
+e.g. domain.org.crt -> domain.org.bundle.crt 
 
-    $ docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock jwilder/nginx-proxy
+See the [nginx docs](http://nginx.org/en/docs/http/configuring_https_servers.html#chains) for further information.
 
-Then start any containers you want proxied with an env var `VIRTUAL_HOST=subdomain.youdomain.com`
+Default: false
 
-    $ docker run -e VIRTUAL_HOST=foo.bar.com  ...
+## GLOB_SSL_CERT_BUNDLE_INFIX
 
-Provided your DNS is setup to forward foo.bar.com to the a host running nginx-proxy, the request will be routed to a container with the VIRTUAL_HOST env var set.
+Set the insertion string inspected between name and cert file extension. Defaults to ".bundle".
 
-### Multiple Ports
+## GLOB_SSL_SESSION_TIMEOUT
 
-If your container exposes multiple ports, nginx-proxy will default to the service running on port 80.  If you need to specify a different port, you can set a VIRTUAL_PORT env var to select a different one.  If your container only exposes one port and it has a VIRTUAL_HOST env var set, that port will be selected.
+Change ssl session timeout - default: 5m
 
-  [1]: https://github.com/jwilder/docker-gen
-  [2]: http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/
+## GLOB_SSL_SESSION_CACHE
 
-### Multiple Hosts
+Modify size of shared ssl session cache - default: 50m
 
-If you need to support multiple virtual hosts for a container, you can separate each entry with commas.  For example, `foo.bar.com,baz.bar.com,bar.com` and each host will be setup the same.
+## GLOB_SPDY_ENABLED
 
-### Wildcard Hosts
+Enable high speed ssl spdy protocol for supporting clients - default: false
 
-You can also use wildcards at the beginning and the end of host name, like `*.bar.com` or `foo.bar.*`. Or even a regular expression, which can be very useful in conjunction with a wildcard DNS service like [xip.io](http://xip.io), using `~^foo\.bar\..*\.xip\.io` will match `foo.bar.127.0.0.1.xip.io`, `foo.bar.10.0.2.2.xip.io` and all other given IPs. More information about this topic can be found in the nginx documentation about [`server_names`](http://nginx.org/en/docs/http/server_names.html).
+## GLOB_HTTP_NO_SERVICE
 
-### Separate Containers
+You may want to return another status code in case of not matching server requests - default: 503
 
-nginx-proxy can also be run as two separate containers using the [jwilder/docker-gen](https://index.docker.io/u/jwilder/docker-gen/)
-image and the official [nginx](https://registry.hub.docker.com/_/nginx/) image.
+## GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED
 
-You may want to do this to prevent having the docker socket bound to a publicly exposed container service.
+To easily tell the proxy to redirect requests from a prefixed domain to the none prefixed one and vice versa - default: false
 
-To run nginx proxy as a separate container you'll need to have [nginx.tmpl](https://github.com/jwilder/nginx-proxy/blob/master/nginx.tmpl) on your host system.
+## GLOB_AUTO_REDIRECT_PREFIX
 
-First start nginx with a volume:
+Provide a custom prefix to include with auto redirect.
 
+e.g. redirect 
 
-    $ docker run -d -p 80:80 --name nginx -v /tmp/nginx:/etc/nginx/conf.d -t nginx
+*www*.domain.org -> domain.org
+domain.org -> *www*.domain.org
 
-Then start the docker-gen container with the shared volume and template:
+*api*.domain.org -> domain.org
+domain.org -> *cdn*.domain.org
 
-```
-$ docker run --volumes-from nginx \
-    -v /var/run/docker.sock:/tmp/docker.sock \
-    -v $(pwd):/etc/docker-gen/templates \
-    -t docker-gen -notify-sighup nginx -watch -only-published /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-```
+Default: www
 
-Finally, start your containers with `VIRTUAL_HOST` environment variables.
+## GLOB_AUTO_REDIRECT_DIRECTION
 
-    $ docker run -e VIRTUAL_HOST=foo.bar.com  ...
+To control source and destination of auto redirect:
 
-### SSL Support
+- 0: redirect from prefix to non-prefix
+- 1: redirect from non-prefix to prefix
 
-SSL is supported using single host, wildcard and SNI certificates using naming conventions for
-certificates or optionally specifying a cert name (for SNI) as an environment variable.
+#Original 
 
-To enable SSL:
+Find original readme data at Jason's [github repo](https://github.com/jwilder/nginx-proxy).
 
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/certs:/etc/nginx/certs -v /var/run/docker.sock:/tmp/docker.sock jwilder/nginx-proxy
+Focus on explaining differences here. Don't hesitate to ask.
 
-The contents of `/path/to/certs` should contain the certificates and private keys for any virtual
-hosts in use.  The certificate and keys should be named after the virtual host with a `.crt` and
-`.key` extension.  For example, a container with `VIRTUAL_HOST=foo.bar.com` should have a
-`foo.bar.com.crt` and `foo.bar.com.key` file in the certs directory.
+# Quickstart
 
-#### Wildcard Certificates
+    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
+    
+# Maximum Customization
 
-Wildcard certificates and keys should be name after the domain name with a `.crt` and `.key` extension.
-For example `VIRTUAL_HOST=foo.bar.com` would use cert name `bar.com.crt` and `bar.com.key`.
-
-#### SNI
-
-If your certificate(s) supports multiple domain names, you can start a container with `CERT_NAME=<name>`
-to identify the certificate to be used.  For example, a certificate for `*.foo.com` and `*.bar.com`
-could be named `shared.crt` and `shared.key`.  A container running with `VIRTUAL_HOST=foo.bar.com`
-and `CERT_NAME=shared` will then use this shared cert.
-
-#### How SSL Support Works
-
-The SSL cipher configuration is based on [mozilla nginx intermediate profile](https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx) which
-should provide compatibility with clients back to Firefox 1, Chrome 1, IE 7, Opera 5, Safari 1,
-Windows XP IE8, Android 2.3, Java 7.  The configuration also enables HSTS, and SSL
-session caches.
-
-The behavior for the proxy when port 80 and 443 are exposed is as follows:
-
-* If a container has a usable cert, port 80 will redirect to 443 for that container so that HTTPS
-is always preferred when available.
-* If the container does not have a usable cert, a 503 will be returned.
-
-Note that in the latter case, a browser may get an connection error as no certificate is available
-to establish a connection.  A self-signed or generic cert named `default.crt` and `default.key`
-will allow a client browser to make a SSL connection (likely w/ a warning) and subsequently receive
-a 503.
-
-### Basic Authentication Support
-
-In order to be able to securize your virtual host, you have to create a file named as its equivalent VIRTUAL_HOST variable on directory
-/etc/nginx/htpasswd/$VIRTUAL_HOST
-
-    $ docker run -d -p 80:80 -p 443:443 -v /path/to/htpasswd:/etc/nginx/htpasswd -v /path/to/certs:/etc/nginx/certs -v /var/run/docker.sock:/tmp/docker.sock jwilder/nginx-proxy
-
-You'll need apache2-utils on the machine you plan to create de htpasswd file. Follow these [instructions](http://httpd.apache.org/docs/2.2/programs/htpasswd.html)
+    docker run -d --name "mgt-op" \
+        -p 80:80 -p 443:443 \
+        -e 'GLOB_MAX_BODY_SIZE=1g' \
+        -e 'GLOB_SSL_SESSION_TIMEOUT=10m' \
+        -e 'GLOB_SSL_SESSION_CACHE=100m' \
+        -e 'GLOB_SSL_CERT_BUNDLE_INFIX=.chained' \
+        -e 'GLOB_SSL_CERT_BUNDLE_ENABLED=true' \
+        -e 'GLOB_SPDY_ENABLED=true' \
+        -e 'GLOB_HTTP_NO_SERVICE=404' \
+        -e 'GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED=true' \
+        -e 'GLOB_AUTO_REDIRECT_PREFIX=subservice' \
+        -e 'AUTO_REDIRECT_DIRECTION=1' \
+        -v /etc/certs:/etc/nginx/certs \
+        -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
