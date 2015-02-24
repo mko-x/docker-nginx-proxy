@@ -38,7 +38,7 @@ ENV GLOB_SSL_CERT_BUNDLE_INFIX ".bundle"
 # set default session timeout
 ENV GLOB_SSL_SESSION_TIMEOUT 5m
 
-# set default session timeout
+# set default shared session cache
 ENV GLOB_SSL_SESSION_CACHE 50m
 
 # activate SPDY support
@@ -49,15 +49,15 @@ ENV GLOB_SPDY_ENABLED "false"
 ENV GLOB_HTTP_NO_SERVICE 503
 
 # enable some kind of prefix redirection
-ENV AUTO_REDIRECT_WITH_PREFIX_ENABLED "false"
+ENV GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED "false"
 
 # set prefix to be used for auto redirect
-ENV AUTO_REDIRECT_PREFIX www
+ENV GLOB_AUTO_REDIRECT_PREFIX www
 
 # set direction
 # - 0: redirect from prefix to non-prefix
 # - 1: redirect from non-prefix to prefix
-ENV AUTO_REDIRECT_DIRECTION 0
+ENV GLOB_AUTO_REDIRECT_DIRECTION 0
 
 # connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
@@ -66,6 +66,6 @@ ENV DOCKER_HOST unix:///tmp/docker.sock
 ADD . /app/
 WORKDIR /app/
 
-VOLUME ["/etc/nginx/certs"]
+VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
 
 CMD ["forego", "start", "-r"]

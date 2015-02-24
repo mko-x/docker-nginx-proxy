@@ -1,21 +1,22 @@
 # Generated nginx site conf
 {{/* MAPPING of configuration env vars to file globals avoiding problems within nested env access. */}}
+
+{{/* Default vals where necessary */}}
 {{ $infix := "" }}
 {{ $bundleEnabled := 0 }}
-
 {{ $autoRedirectEnabled := 0 }}
 {{ $prefix := "" }}
-
 {{ $spdyEnabled := 0 }}
 
+{{/* If enabled get provided working values */}}
 {{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false") }}
     {{ $bundleEnabled := 1 }}
     {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
 {{ end }}
 
-{{ if (ne .Env.AUTO_REDIRECT_WITH_PREFIX_ENABLED "false") }}
+{{ if (ne .Env.GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED "false") }}
     {{ $autoRedirectEnabled := 1 }}
-    {{ $prefix := .Env.AUTO_REDIRECT_PREFIX }}
+    {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }}
 {{ end }}
 
 {{ if (ne .Env.GLOB_SPDY_ENABLED "false") }}
@@ -23,7 +24,7 @@
 {{ end }}
 
 {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }}
-{{ $autoRedirectDirection := .Env.AUTO_REDIRECT_DIRECTION }}
+{{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }}
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 
@@ -180,6 +181,7 @@ server {
 server {
         server_name {{ $host }};
     
+    {{/* SPDY effect 1 */}}
     {{ if eq $spdyEnabled 1 }}
         listen 443 ssl spdy;
     {{ else }}
@@ -193,6 +195,7 @@ server {
         ssl_session_timeout {{ $sslSessionTimeout }};
         ssl_session_cache shared:SSL:{{ $sslSessionCache }};
 
+        {{/* Use a bundled certificate if told */}}
         {{ if eq $bundleEnabled 1 }}
         
         {{ $certBundle := replace "ccii" "cc" $cert -1 }}
@@ -208,17 +211,24 @@ server {
         
         ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
+        {{/* SPDY effect 2 */}}
         {{ if eq $spdyEnabled 1 }}
         add_header Alternate-Protocol  443:npn-spdy/3;
         {{ end }}
+        
         add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
 
+        {{/* Custom include handling */}}
         {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
         include {{ printf "/etc/nginx/vhost.d/%s" $host }};
         {{ end }}
 
         location / {
+            
+            {{/* Pass with proto optionally to provide forcing connection to backend via protocol like HTTPS if necessary */}}
             proxy_pass {{ $proto }}://{{ $host }};
+            
+            {{/* Add basic auth if htpasswd dir contains a file named like the host */}}
             {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
             auth_basic "Provide authentication for {{ $host }}";
             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
@@ -259,6 +269,7 @@ server {
 
         location / {
                 proxy_pass {{ $proto }}://{{ $host }};
+                
                 {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                 auth_basic "Provide authentication for {{ $host }}";
                 auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
