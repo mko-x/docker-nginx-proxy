@@ -70,7 +70,7 @@ upstream {{ $host }} {
 
 	{{ $addrLen := len $container.Addresses }}
     
-    {{/* ADRESSING SWITCH. */}}
+    {{/* ADRESSING SWITCH CASE. */}}
     
 	{{ if eq $addrLen 1 }}
 	{{/* Address/Port count == 1, use the only one */}}
@@ -134,11 +134,11 @@ upstream {{ $host }} {
 {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
 {{/* Valid HTTPS certificate and key files found. */}}
 
-{{ if (eq $autoRedirectEnabled 1) }}
+{{ if eq $autoRedirectEnabled 1 }}
 
 server {
 
-    {{ if (eq .Env.AUTO_REDIRECT_DIRECTION 0) }}
+    {{ if eq .Env.AUTO_REDIRECT_DIRECTION 0 }}
     {{/* Redirect prefixed host to plain host via moved permanently */}}
     
         server_name  {{ $prefix }}.{{ $host }};
@@ -160,13 +160,13 @@ server {
 {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
 {{ end }}
 
-# enforce ssl if enabled
+{{/* Enforce https, redirect http */}}
 server {
         server_name {{ $host }};
         rewrite ^(.*) https://{{ $host }}$1 permanent;
 }
 
-# ssl server
+{{/* SSL handling server */}}
 server {
         server_name {{ $host }};
     
@@ -183,10 +183,10 @@ server {
         ssl_session_timeout {{ .Env.GLOB_SSL_SESSION_TIMEOUT }};
         ssl_session_cache shared:SSL:{{ .Env.GLOB_SSL_SESSION_CACHE }};
 
-        {{ if (eq $bundleEnabled 1) }}
+        {{ if eq $bundleEnabled 1 }}
         
-        {{ $certBundle := replace "ccccciiiii" "ccccc" $cert -1 }}
-        {{ $certBundle := replace $certBundle "iiiii" $infix -1 }}
+        {{ $certBundle := replace "ccii" "cc" $cert -1 }}
+        {{ $certBundle := replace $certBundle "ii" $infix -1 }}
 
         ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
         
@@ -198,15 +198,19 @@ server {
         
         ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
-    {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
+        {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
         add_header Alternate-Protocol  443:npn-spdy/3;
-    {{ end }}
+        {{ end }}
         add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
 
+        {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+        include {{ printf "/etc/nginx/vhost.d/%s" $host }};
+        {{ end }}
+
         location / {
-            proxy_pass http://{{ $host }};
+            proxy_pass {{ $proto }}://{{ $host }};
             {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-            auth_basic	{{ .Env.GLOB_AUTH_MSG }} {{ $host }};
+            auth_basic "Provide authentication for {{ $host) }}";
             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
             {{ end }}
         }
@@ -216,10 +220,10 @@ server {
 {{ else }} 
 {{/* Defaulting to HTTP. */}}
 
-{{ if (eq $autoRedirectEnabled 1) }}
+{{ if eq $autoRedirectEnabled 1 }}
 
 server {
-    {{ if (eq .Env.AUTO_REDIRECT_DIRECTION 0) }}
+    {{ if eq .Env.AUTO_REDIRECT_DIRECTION 0 }}
     
         server_name  {{ $prefix }}.{{ $host }};
         rewrite ^(.*) http://{{ $host }}$1 permanent;
@@ -235,13 +239,18 @@ server {
 {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end. */}}
 {{ end }}
 
+{{/* HTTP proxy */}}
 server {
         server_name {{ $host }};
+
+        {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+        include {{ printf "/etc/nginx/vhost.d/%s" $host }};
+        {{ end }}
 
         location / {
                 proxy_pass {{ $proto }}://{{ $host }};
                 {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-                auth_basic	"Access Denied {{ $host }}";
+                auth_basic "Provide authentication for {{ $host) }}";
                 auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
                 {{ end }}
         }

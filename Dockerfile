@@ -1,5 +1,6 @@
 FROM nginx:1.7.8
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
+# based on work by Jason Wilder jwilder@litl.com
 
 # install packages
 RUN apt-get update -y -qq \
