@@ -6,6 +6,8 @@
 {{ $autoRedirectEnabled := 0 }}
 {{ $prefix := "" }}
 
+{{ $spdyEnabled := 0 }}
+
 {{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false") }}
     {{ $bundleEnabled := 1 }}
     {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
@@ -16,7 +18,12 @@
     {{ $prefix := .Env.AUTO_REDIRECT_PREFIX }}
 {{ end }}
 
+{{ if (ne .Env.GLOB_SPDY_ENABLED "false") }}
+    {{ $spdyEnabled := 1 }}
+{{ end }}
+
 {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }}
+{{ $autoRedirectDirection := .Env.AUTO_REDIRECT_DIRECTION }}
 
 # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
 # scheme used to connect to this server
@@ -138,7 +145,7 @@ upstream {{ $host }} {
 
 server {
 
-    {{ if eq .Env.AUTO_REDIRECT_DIRECTION 0 }}
+    {{ if eq $autoRedirectDirection 0 }}
     {{/* Redirect prefixed host to plain host via moved permanently */}}
     
         server_name  {{ $prefix }}.{{ $host }};
@@ -170,7 +177,7 @@ server {
 server {
         server_name {{ $host }};
     
-    {{ if (ne .Env.GLOB_SPDY_ENABLED "false") }}
+    {{ if eq $spdyEnabled 1 }}
         listen 443 ssl spdy;
     {{ else }}
         listen 443 ssl;
@@ -198,7 +205,7 @@ server {
         
         ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
-        {{ if (eq .Env.GLOB_SPDY_ENABLED true) }}
+        {{ if eq $spdyEnabled 1 }}
         add_header Alternate-Protocol  443:npn-spdy/3;
         {{ end }}
         add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
@@ -223,7 +230,7 @@ server {
 {{ if eq $autoRedirectEnabled 1 }}
 
 server {
-    {{ if eq .Env.AUTO_REDIRECT_DIRECTION 0 }}
+    {{ if eq $autoRedirectDirection 0 }}
     
         server_name  {{ $prefix }}.{{ $host }};
         rewrite ^(.*) http://{{ $host }}$1 permanent;
