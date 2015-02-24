@@ -210,7 +210,7 @@ server {
         location / {
             proxy_pass {{ $proto }}://{{ $host }};
             {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-            auth_basic "Provide authentication for {{ $host) }}";
+            auth_basic "Provide authentication for {{ $host }}";
             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
             {{ end }}
         }
@@ -250,7 +250,7 @@ server {
         location / {
                 proxy_pass {{ $proto }}://{{ $host }};
                 {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-                auth_basic "Provide authentication for {{ $host) }}";
+                auth_basic "Provide authentication for {{ $host }}";
                 auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
                 {{ end }}
         }
