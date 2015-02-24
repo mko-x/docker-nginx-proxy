@@ -1,5 +1,5 @@
 # Generated nginx site conf
-{{/* MAPPING of configuration env vars to file globals avoiding problems if nesting multiple instances of nginx-proxy. */}}
+{{/* MAPPING of configuration env vars to file globals avoiding problems within nested env access. */}}
 {{ $infix := "" }}
 {{ $bundleEnabled := 0 }}
 
@@ -24,6 +24,9 @@
 
 {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }}
 {{ $autoRedirectDirection := .Env.AUTO_REDIRECT_DIRECTION }}
+{{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
+{{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
+
 
 # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
 # scheme used to connect to this server
@@ -187,8 +190,8 @@ server {
         ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA;
 
         ssl_prefer_server_ciphers on;
-        ssl_session_timeout {{ .Env.GLOB_SSL_SESSION_TIMEOUT }};
-        ssl_session_cache shared:SSL:{{ .Env.GLOB_SSL_SESSION_CACHE }};
+        ssl_session_timeout {{ $sslSessionTimeout }};
+        ssl_session_cache shared:SSL:{{ $sslSessionCache }};
 
         {{ if eq $bundleEnabled 1 }}
         
