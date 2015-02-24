@@ -24,9 +24,6 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
  && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
-COPY . /app/
-WORKDIR /app/
-
 # set max size within a body
 ENV GLOB_MAX_BODY_SIZE 10m
 
@@ -64,6 +61,10 @@ ENV AUTO_REDIRECT_DIRECTION 0
 
 # connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
+
+# add late as tmpl is most modified part and less content needs to be rebuilt
+ADD . /app/
+WORKDIR /app/
 
 VOLUME ["/etc/nginx/certs"]
 
