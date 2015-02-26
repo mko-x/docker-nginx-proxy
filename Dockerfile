@@ -1,24 +1,19 @@
-FROM nginx:1.7.8
+FROM nginx:1.7.10
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
-# based on work by Jason Wilder jwilder@litl.com
 
 # install packages
 RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
     ca-certificates \
-    wget nano \
+    wget \
  && apt-get clean -y -qq \
  && rm -r /var/lib/apt/lists/*
-
-# Configure Nginx and apply fix for very long server names
-RUN echo "daemon off;" >> /etc/nginx/nginx.conf \
- && sed -i 's/^http {/&\n    server_names_hash_bucket_size 128;/g' /etc/nginx/nginx.conf
  
  # Install Forego
 RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
  && chmod u+x /usr/local/bin/forego
 
-ENV DOCKER_GEN_VERSION 0.3.6
+ENV DOCKER_GEN_VERSION 0.3.7
 
 RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
  && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
@@ -63,7 +58,12 @@ ENV GLOB_AUTO_REDIRECT_DIRECTION 0
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
 # add late as tmpl is most modified part and less content needs to be rebuilt
-ADD . /app/
+ADD ./conf/nginx.tmpl /app/
+ADD ./conf/Procfile /app/
+
+RUN rm -f /etc/nginx/nginx.conf
+ADD ./conf/nginx.conf /etc/nginx/
+
 WORKDIR /app/
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]

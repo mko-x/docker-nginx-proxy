@@ -74,6 +74,10 @@ server {
 {{/* MAIN VIRTUAL_HOST generation. */}}
 {{ range $host, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
 
+{{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
+{{ $host := first ( split $hostAndPort ":" ) }}
+{{ $port := last ( split $hostAndPort ":" ) }}
+
 upstream {{ $host }} {
 
 {{/* UPSTREAM GENERATION. */}}
@@ -81,7 +85,7 @@ upstream {{ $host }} {
 
 	{{ $addrLen := len $container.Addresses }}
     
-    {{/* ADRESSING SWITCH CASE. */}}
+    {{/* ADDRESSING SWITCH CASE. */}}
     
 	{{ if eq $addrLen 1 }}
 	{{/* Address/Port count == 1, use the only one */}}
@@ -90,6 +94,18 @@ upstream {{ $host }} {
         # {{$container.Name}}.single 
         server {{ $address.IP }}:{{ $address.Port }};
 		{{ end }}
+        
+    {{ else if (and ($port) (ne $host $port) }}
+    {{/* Address/Port count != 1, target port via ':' seperator provided */}}
+    
+    	{{ range $address := .Addresses }}
+    
+    	   {{ if eq $address.Port $port }}
+        # {{$container.Name}}.explicit
+        server {{ $address.IP }}:{{ $address.Port }};
+    	   {{ end }}
+       
+    	{{ end }}
     
 	{{ else if $container.Env.VIRTUAL_PORT }}
     {{/* Port count != 1, VIRTUAL_PORT found, use given */}}
