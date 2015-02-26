@@ -95,7 +95,7 @@ upstream {{ $host }} {
         server {{ $address.IP }}:{{ $address.Port }};
 		{{ end }}
         
-    {{ else if (and ($port) (ne $host $port) }}
+    {{ else if (and ($port) (ne $host $port)) }}
     {{/* Address/Port count != 1, target port via ':' seperator provided */}}
     
     	{{ range $address := .Addresses }}
