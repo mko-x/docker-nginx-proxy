@@ -72,8 +72,6 @@ server {
 }
 
 {{/* MAIN VIRTUAL_HOST generation. */}}
-{{ range $host, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
-
 {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
 {{ $host := first ( split $hostAndPort ":" ) }}
 {{ $port := last ( split $hostAndPort ":" ) }}
