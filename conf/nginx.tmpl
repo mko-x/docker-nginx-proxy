@@ -9,7 +9,7 @@
 {{ $spdyEnabled := 0 }}
 
 {{/* If enabled get provided working values */}}
-{{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false") }}
+{{ if ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false" }}
     {{ $bundleEnabled := 1 }}
     {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
 {{ end }}
@@ -28,7 +28,7 @@
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 
-## configuration input
+## configuration input check
 # bundled: {{.Env.GLOB_SSL_CERT_BUNDLE_ENABLED}}
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
 # auto redirect: {{.Env.GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED}}
