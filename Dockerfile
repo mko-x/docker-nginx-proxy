@@ -22,13 +22,10 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
 # set max size within a body
 ENV GLOB_MAX_BODY_SIZE 10m
 
-# support intermediate and CA-chained SSL certificate bundles
-ENV GLOB_SSL_CERT_BUNDLE_ENABLED "false"
-
 # enable bundle support to provide nginx CA chain
 # have a look at http://nginx.org/en/docs/http/configuring_https_servers.html#chains
 # for more info
-ENV GLOB_SSL_CERT_BUNDLE_INFIX ".bundle"
+#ENV GLOB_SSL_CERT_BUNDLE_INFIX 
 
 # set default session timeout
 ENV GLOB_SSL_SESSION_TIMEOUT 5m
@@ -38,13 +35,13 @@ ENV GLOB_SSL_SESSION_CACHE 50m
 
 # activate SPDY support
 # more info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
-ENV GLOB_SPDY_ENABLED "false"
+ENV GLOB_SPDY_ENABLED 0
 
 # default return code for errors
 ENV GLOB_HTTP_NO_SERVICE 503
 
-# enable some kind of prefix redirection
-ENV GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED "false"
+# redirect prefixed to non prefix
+ENV GLOB_AUTO_REDIRECT_ENABLED 0
 
 # set prefix to be used for auto redirect
 ENV GLOB_AUTO_REDIRECT_PREFIX www
