@@ -49,7 +49,7 @@ ENV GLOB_AUTO_REDIRECT_PREFIX www
 # set direction
 # - 0: redirect from prefix to non-prefix
 # - 1: redirect from non-prefix to prefix
-ENV GLOB_AUTO_REDIRECT_DIRECTION 0
+ENV GLOB_AUTO_REDIRECT_DIRECTION "0"
 
 # connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
