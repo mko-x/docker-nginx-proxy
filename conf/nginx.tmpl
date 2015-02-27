@@ -28,6 +28,18 @@
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 
+# configuration data
+# bundled: {{$bundleEnabled}}
+# bundled infix: {{$infix}}
+# auto redirect: {{$bundleEnabled}}
+# redirect prefix: {{$prefix}}
+# redirect direction: {{$autoRedirectDirection}}
+
+# spdy enabled: {{$spdyEnabled}}
+# unavailable service code: {{$unavailableService}}
+# redirect prefix: {{$unavailableService}}
+# ssl session timeout: {{$sslSessionTimeout}}
+# ssl session cache size: {{$sslSessionCache}}
 
 # If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
 # scheme used to connect to this server
