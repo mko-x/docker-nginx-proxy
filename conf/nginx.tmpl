@@ -9,7 +9,7 @@
 {{ $spdyEnabled := 0 }}
 
 {{/* If enabled get provided working values */}}
-{{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "true") }}
+{{ if (ne .Env.GLOB_SSL_CERT_BUNDLE_ENABLED "false") }}
     {{ $bundleEnabled := 1 }}
     {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
 {{ end }}
@@ -28,16 +28,27 @@
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 
-# configuration data
+## configuration input
+# bundled: {{.Env.GLOB_SSL_CERT_BUNDLE_ENABLED}}
+# bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
+# auto redirect: {{.Env.GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED}}
+# redirect prefix: {{.Env.GLOB_AUTO_REDIRECT_PREFIX}}
+# redirect direction: {{.Env.GLOB_AUTO_REDIRECT_DIRECTION}}
+
+# spdy enabled: {{.Env.GLOB_SPDY_ENABLED}}
+# unavailable service code: {{.Env.GLOB_HTTP_NO_SERVICE}}
+# ssl session timeout: {{.Env.GLOB_SSL_SESSION_TIMEOUT}}
+# ssl session cache size: {{.Env.GLOB_SSL_SESSION_CACHE}}
+
+
+## configuration data
 # bundled: {{$bundleEnabled}}
 # bundled infix: {{$infix}}
-# auto redirect: {{$bundleEnabled}}
+# auto redirect: {{$autoRedirectEnabled}}
 # redirect prefix: {{$prefix}}
 # redirect direction: {{$autoRedirectDirection}}
 
-# spdy enabled: {{$spdyEnabled}}
 # unavailable service code: {{$unavailableService}}
-# redirect prefix: {{$unavailableService}}
 # ssl session timeout: {{$sslSessionTimeout}}
 # ssl session cache size: {{$sslSessionCache}}
 
