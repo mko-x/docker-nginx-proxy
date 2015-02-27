@@ -41,7 +41,7 @@ ENV GLOB_SPDY_ENABLED 0
 ENV GLOB_HTTP_NO_SERVICE 503
 
 # redirect prefixed to non prefix
-ENV GLOB_AUTO_REDIRECT_ENABLED "false"
+ENV GLOB_AUTO_REDIRECT_ENABLED "0"
 
 # set prefix to be used for auto redirect
 ENV GLOB_AUTO_REDIRECT_PREFIX www
