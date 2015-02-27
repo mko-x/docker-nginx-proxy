@@ -23,7 +23,7 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
 ENV GLOB_MAX_BODY_SIZE 10m
 
 # support intermediate and CA-chained SSL certificate bundles
-ENV GLOB_SSL_CERT_BUNDLE_ENABLED "false"
+ENV GLOB_SSL_CERT_BUNDLE_ENABLED 0
 
 # enable bundle support to provide nginx CA chain
 # have a look at http://nginx.org/en/docs/http/configuring_https_servers.html#chains
