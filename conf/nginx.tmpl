@@ -174,7 +174,7 @@ upstream {{ $host }} {
 {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
 {{/* Valid HTTPS certificate and key files found. */}}
 
-{{ if eq $autoRedirectEnabled 0 }}
+{{ if $autoRedirectEnabled == 0 }}
 
 server {
 

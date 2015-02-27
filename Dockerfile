@@ -25,7 +25,7 @@ ENV GLOB_MAX_BODY_SIZE 10m
 # enable bundle support to provide nginx CA chain
 # have a look at http://nginx.org/en/docs/http/configuring_https_servers.html#chains
 # for more info
-#ENV GLOB_SSL_CERT_BUNDLE_INFIX 
+ENV GLOB_SSL_CERT_BUNDLE_INFIX 
 
 # set default session timeout
 ENV GLOB_SSL_SESSION_TIMEOUT 5m
