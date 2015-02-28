@@ -213,7 +213,7 @@ server {
 {{ if eq $allowHttp "1" }}
 server {
         server_name {{ $host }};
-        
+        listen 80;
         location / {
                 proxy_pass {{ $proto }}://{{ $host }};
                 
