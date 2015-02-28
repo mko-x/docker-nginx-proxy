@@ -201,7 +201,7 @@ server {
 {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
 {{ end }}
 
-{{ if (and (eq $forceSSL "1") (eq $allowHttp "0") }}
+{{ if (and (eq $forceSSL "1") (eq $allowHttp "0")) }}
 {{/* Enforce https, redirect http */}}
 server {
         server_name {{ $host }};
