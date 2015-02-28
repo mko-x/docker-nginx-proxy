@@ -231,7 +231,7 @@ server {
         ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
         {{/* SPDY effect 2 */}}
-        {{ if eq $spdyEnabled 1 }}
+        {{ if eq $spdyEnabled "1" }}
         add_header Alternate-Protocol  443:npn-spdy/3;
         {{ end }}
         
