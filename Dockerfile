@@ -35,7 +35,7 @@ ENV GLOB_SSL_SESSION_CACHE 50m
 
 # activate SPDY support
 # more info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
-ENV GLOB_SPDY_ENABLED 0
+ENV GLOB_SPDY_ENABLED "0"
 
 # default return code for errors
 ENV GLOB_HTTP_NO_SERVICE 503
