@@ -3,7 +3,6 @@
 
 {{/* Default vals where necessary */}}
 {{ $infix := "" }}
-{{ $bundleEnabled := "0" }}
 {{ $autoRedirectEnabled := "0" }}
 {{ $prefix := "" }}
 {{ $spdyEnabled := "0" }}
@@ -21,7 +20,6 @@
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 
 ## configuration input check
-# bundled: {{.Env.GLOB_SSL_CERT_BUNDLE_ENABLED}}
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
 # auto redirect: {{.Env.GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED}}
 # redirect prefix: {{.Env.GLOB_AUTO_REDIRECT_PREFIX}}
