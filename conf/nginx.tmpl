@@ -119,7 +119,7 @@ upstream {{ $host }} {
     
     	   {{ if eq $address.Port $port }}
         # {{$container.Name}}.explicit
-        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
     	   {{ end }}
        
     	{{ end }}
@@ -131,7 +131,7 @@ upstream {{ $host }} {
         
 		   {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
         # {{$container.Name}}.explicit
-        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
 		   {{ end }}
            
 		{{ end }}
@@ -144,7 +144,7 @@ upstream {{ $host }} {
             {{ if eq $address.Port "80" }}
 
         # {{$container.Name}}.default
-        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
 
             {{ end }}
 
