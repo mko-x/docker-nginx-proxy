@@ -52,23 +52,12 @@ Set the nginx maximum body size.
 See [nginx docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 ### Default: 10m
 
-## GLOB_SSL_CERT_BUNDLE_ENABLED
-### Info
-Ensures **CA-chain reliability**, some certificate providers deliver some kind of intermediate certificate to guarantee their authority. For nginx this cert and your own cert have to be concatenated to a bundle. 
-
-If enabled you should provide that concatenated certificate **additionally** to your cert, marked by some kind of insertion between original file (i.e. domain) name. How it looks like can be configured with next env var.
-
-e.g. domain.org.crt -> domain.org.bundle.crt 
-### Link
-See the [nginx https servers docs](http://nginx.org/en/docs/http/configuring_https_servers.html#chains) for further information.
-### Default: false
-
 ## GLOB_SSL_CERT_BUNDLE_INFIX
 ### Info
 Set the insertion string inserted between cert file's name and cert file extension.
 
 Ignored if *GLOB_SSL_CERT_BUNDLE_ENABLED* is *false*
-### Default: .bundle
+### Default: "" ( <empty>)
 
 ## GLOB_SSL_SESSION_TIMEOUT
 ### Info
@@ -89,7 +78,7 @@ See [nginx ssl docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_
 Enable high speed ssl spdy protocol for supporting clients.
 ### Link
 See [nginx spdy docs](http://nginx.org/en/docs/http/ngx_http_spdy_module.html)
-### Default: false
+### Default: 0
 
 ## GLOB_HTTP_NO_SERVICE
 ### Info
@@ -99,7 +88,7 @@ You may want to return another status code in case of not matching server reques
 ## GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED
 ### Info
 To easily tell the proxy to redirect requests from a prefixed domain to the none prefixed one and vice versa.
-### Default: false
+### Default: 0
 
 ## GLOB_AUTO_REDIRECT_PREFIX
 ### Info
@@ -115,6 +104,16 @@ domain.org -> *www*.domain.org
 *api*.domain.org -> domain.org
 domain.org -> *cdn*.domain.org
 ### Default: www
+
+## GLOB_HTTPS_FORCE
+### Info
+Redirect calls via http to https.
+### Default 1
+
+## GLOB_ALLOW_HTTP_FALLBACK
+###Info
+As HTTPS/SSL is enabled by default, this flag allows acces via HTTP as well.
+### Default 0
 
 ## GLOB_AUTO_REDIRECT_DIRECTION
 ### Info
