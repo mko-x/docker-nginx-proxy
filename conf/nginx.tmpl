@@ -25,7 +25,6 @@
 
 ## configuration input check
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
-# auto redirect: {{.Env.GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED}}
 # redirect prefix: {{.Env.GLOB_AUTO_REDIRECT_PREFIX}}
 # redirect direction: {{.Env.GLOB_AUTO_REDIRECT_DIRECTION}}
 
@@ -91,6 +90,10 @@ server {
 {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
 {{ $host := first ( split $hostAndPort ":" ) }}
 {{ $port := last ( split $hostAndPort ":" ) }}
+{{ $port := first ( split $hostAndPort "/" ) }}
+{{ $path := replace $hostAndPort $host "" -1 }}
+{{ $path := replace $path $port "" -1 }}
+{{ $path := replace $path ":" "" -1 }}
 
 upstream {{ $host }} {
 
@@ -106,7 +109,7 @@ upstream {{ $host }} {
     
 		{{ with $address := index $container.Addresses 0 }}
         # {{$container.Name}}.single 
-        server {{ $address.IP }}:{{ $address.Port }};
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
 		{{ end }}
         
     {{ else if (and ($port) (ne $host $port)) }}
@@ -116,7 +119,7 @@ upstream {{ $host }} {
     
     	   {{ if eq $address.Port $port }}
         # {{$container.Name}}.explicit
-        server {{ $address.IP }}:{{ $address.Port }};
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
     	   {{ end }}
        
     	{{ end }}
@@ -128,7 +131,7 @@ upstream {{ $host }} {
         
 		   {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
         # {{$container.Name}}.explicit
-        server {{ $address.IP }}:{{ $address.Port }};
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
 		   {{ end }}
            
 		{{ end }}
@@ -139,9 +142,9 @@ upstream {{ $host }} {
     	{{ range $address := $container.Addresses }}
 
             {{ if eq $address.Port "80" }}
-            
+
         # {{$container.Name}}.default
-        server {{ $address.IP }}:{{ $address.Port }};
+        server {{ $address.IP }}:{{ $address.Port }}{{ $path }};;
 
             {{ end }}
 
@@ -178,7 +181,6 @@ upstream {{ $host }} {
 {{ if eq $autoRedirectEnabled "1" }}
 
 server {
-
     {{ if eq $autoRedirectDirection "0" }}
     {{/* Redirect prefixed host to plain host via moved permanently */}}
     
@@ -195,7 +197,6 @@ server {
     
     {{/* AUTO_REDIRECT_DIRECTION end */}}
     {{ end }}
-
 }
 
 {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
