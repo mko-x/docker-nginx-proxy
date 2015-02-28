@@ -5,7 +5,9 @@
 {{ $infix := "" }}
 {{ $autoRedirectEnabled := "0" }}
 {{ $prefix := "" }}
+{{ $forceSSL := "1" }}
 {{ $spdyEnabled := "0" }}
+{{ $allowHttp := "0" }}
 
 {{/* Global env var assignments */}}
 {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
@@ -18,6 +20,8 @@
 {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }}
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
+{{ $forceSSL := .Env.GLOB_HTTPS_FORCE }}
+{{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
 
 ## configuration input check
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
@@ -198,11 +202,13 @@ server {
 {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
 {{ end }}
 
+{{ if (and (eq $forceSSL "1") (eq $allowHttp "0") }}
 {{/* Enforce https, redirect http */}}
 server {
         server_name {{ $host }};
         rewrite ^(.*) https://{{ $host }}$1 permanent;
 }
+{{ end }}
 
 {{/* SSL handling server */}}
 server {

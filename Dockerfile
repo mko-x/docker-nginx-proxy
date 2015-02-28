@@ -19,6 +19,15 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
  && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
+ # add late as tmpl is most modified part and less content needs to be rebuilt
+ADD ./conf/nginx.tmpl /app/
+ADD ./conf/Procfile /app/
+
+RUN rm -f /etc/nginx/nginx.conf
+ADD ./conf/nginx.conf /etc/nginx/
+
+WORKDIR /app/
+
 # set max size within a body
 ENV GLOB_MAX_BODY_SIZE 10m
 
@@ -51,17 +60,14 @@ ENV GLOB_AUTO_REDIRECT_PREFIX www
 # - 1: redirect from non-prefix to prefix
 ENV GLOB_AUTO_REDIRECT_DIRECTION "0"
 
+# Only allow ssl
+ENV GLOB_HTTPS_FORCE "1"
+
+# Allow to use http only if https is not available
+ENV GLOB_ALLOW_HTTP_FALLBACK "0"
+
 # connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
-
-# add late as tmpl is most modified part and less content needs to be rebuilt
-ADD ./conf/nginx.tmpl /app/
-ADD ./conf/Procfile /app/
-
-RUN rm -f /etc/nginx/nginx.conf
-ADD ./conf/nginx.conf /etc/nginx/
-
-WORKDIR /app/
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
 
