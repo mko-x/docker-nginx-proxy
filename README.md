@@ -37,7 +37,7 @@ See readme data at Jason's [github repo](https://github.com/jwilder/nginx-proxy)
 
 To make Jason's nginx-proxy more **configurable** without having to provide custom configs/includes, I added some env vars. All of them change the global behavior of nginx or it's configured servers within the templating engine (starting with "GLOB_"). 
 
-Another aim is to increase **performance** especially in multiple full ssl based environments.
+Another aim is to increase **performance** especially in multiple full ssl based environments - forcing ssl by default.
 
 Last but not least I tried to improve **readability** and documentation for easier understanding of the image's working principle.
 
@@ -98,22 +98,17 @@ Ignored if *GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED* is *false*
 
 e.g. redirect 
 
-*www*.domain.org -> domain.org
-domain.org -> *www*.domain.org
+    *www*.domain.org -> domain.org
+    domain.org -> *www*.domain.org
 
-*api*.domain.org -> domain.org
-domain.org -> *cdn*.domain.org
+    *api*.domain.org -> domain.org
+    domain.org -> *cdn*.domain.org
 ### Default: www
 
 ## GLOB_HTTPS_FORCE
 ### Info
 Redirect calls via http to https.
 ### Default 1
-
-## GLOB_ALLOW_HTTP_FALLBACK
-###Info
-As HTTPS/SSL is enabled by default, this flag allows acces via HTTP as well.
-### Default 0
 
 ## GLOB_AUTO_REDIRECT_DIRECTION
 ### Info
@@ -123,6 +118,11 @@ To control source and destination of auto redirect:
 - 1: redirect from non-prefix to prefix
 ### Default: 0
 
+## GLOB_ALLOW_HTTP_FALLBACK
+###Info
+As HTTPS/SSL is enabled by default, this flag allows acces via HTTP as well.
+### Default 0
+
 # Quickstart
 
     docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
@@ -131,15 +131,16 @@ To control source and destination of auto redirect:
 
     docker run -d --name "mgt-op" \
         -p 80:80 -p 443:443 \
-        -e 'GLOB_MAX_BODY_SIZE=1g' \
-        -e 'GLOB_SSL_SESSION_TIMEOUT=10m' \
-        -e 'GLOB_SSL_SESSION_CACHE=100m' \
-        -e 'GLOB_SSL_CERT_BUNDLE_INFIX=.chained' \
-        -e 'GLOB_SSL_CERT_BUNDLE_ENABLED=true' \
-        -e 'GLOB_SPDY_ENABLED=true' \
-        -e 'GLOB_HTTP_NO_SERVICE=404' \
-        -e 'GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED=true' \
-        -e 'GLOB_AUTO_REDIRECT_PREFIX=subservice' \
-        -e 'AUTO_REDIRECT_DIRECTION=1' \
+        -e GLOB_MAX_BODY_SIZE="1g" \
+        -e GLOB_SSL_SESSION_TIMEOUT="10m" \
+        -e GLOB_SSL_SESSION_CACHE="100m" \
+        -e GLOB_SSL_CERT_BUNDLE_INFIX=".chained" \
+        -e GLOB_ALLOW_HTTP_FALLBACK="1" \
+        -e GLOB_HTTPS_FORCE="0"
+        -e GLOB_SPDY_ENABLED="1" \
+        -e GLOB_HTTP_NO_SERVICE="404" \
+        -e GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED="1" \
+        -e GLOB_AUTO_REDIRECT_PREFIX="subservice" \
+        -e AUTO_REDIRECT_DIRECTION="1" \
         -v /etc/certs:/etc/nginx/certs \
         -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
