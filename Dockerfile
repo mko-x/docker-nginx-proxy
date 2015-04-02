@@ -6,6 +6,7 @@ RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
     ca-certificates \
     wget \
+    cron \
  && apt-get clean -y -qq \
  && rm -r /var/lib/apt/lists/*
  
