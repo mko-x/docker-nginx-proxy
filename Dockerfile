@@ -30,11 +30,12 @@ ADD ./conf/nginx.conf /etc/nginx/
 ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
 RUN chmod +x /usr/local/sbin/rotate_nginx_log.sh
 
-RUN mkdir -p /tmp
-RUN crontab -l > /tmp/tmpcron
-RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /tmp/tmpcron
-RUN crontab /tmp/tmpcron
-RUN rm -f /tmp/tmpcron
+#RUN mkdir -p /tmp
+#RUN crontab -l > /tmp/tmpcron
+RUN mkdir -p /etc/cron.d
+RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_log
+#RUN crontab /tmp/tmpcron
+#RUN rm -f /tmp/tmpcron
 
 WORKDIR /app/
 
