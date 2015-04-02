@@ -1,4 +1,4 @@
-FROM nginx:1.7.10
+FROM nginx:1.7.11
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 
 # install packages
