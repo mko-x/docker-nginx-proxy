@@ -26,6 +26,15 @@ ADD ./conf/Procfile /app/
 RUN rm -f /etc/nginx/nginx.conf
 ADD ./conf/nginx.conf /etc/nginx/
 
+ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
+RUN chmod +x /usr/local/sbin/rotate_nginx_log.sh
+
+RUN mkdir -p /tmp
+RUN crontab -l > /tmp/tmpcron
+RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /tmp/tmpcron
+RUN crontab /tmp/tmpcron
+RUN rm -f /tmp/tmpcron
+
 WORKDIR /app/
 
 # set max size within a body
