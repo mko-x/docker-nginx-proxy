@@ -90,7 +90,8 @@ server {
 {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
 {{ $host := first ( split $hostAndPort ":" ) }}
 {{ $port := last ( split $hostAndPort ":" ) }}
-{{ $port := first ( split $hostAndPort "/" ) }}
+{{ $port := first ( split $port "§" )}}
+{{ $listen := last ( split $hostAndPort "§" )}}
 {{ $path := replace $hostAndPort $host "" -1 }}
 {{ $path := replace $path $port "" -1 }}
 {{ $path := replace $path ":" "" -1 }}
@@ -213,7 +214,11 @@ server {
 {{ if eq $allowHttp "1" }}
 server {
         server_name {{ $host }};
-        listen 80;
+        {{ if ne $listen "" }}
+            listen $listen;
+        {{ else }}
+            listen 80;
+        {{ end }}
         location / {
                 proxy_pass {{ $proto }}://{{ $host }};
                 
