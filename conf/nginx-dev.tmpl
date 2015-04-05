@@ -155,7 +155,7 @@ server {
             {{/* $container.Addresses end */}}
     		{{ end }}
             
-            {{ if ne $foundhttp "true" }}
+            {{ if eq $foundhttp "false" }}
                 {{ $saddress := first $container.Addresses }}
                 # {{$container.Name}}.fallback
                 server {{ $saddress.IP }}:{{ $saddress.Port }}{{ $path }};
