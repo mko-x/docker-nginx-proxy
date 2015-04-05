@@ -188,153 +188,153 @@ server {
     {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
     {{/* Valid HTTPS certificate and key files found. */}}
 
-    {{ if eq $autoRedirectEnabled "1" }}
+        {{ if eq $autoRedirectEnabled "1" }}
 
-    server {
-        {{ if eq $autoRedirectDirection "0" }}
-        {{/* Redirect prefixed host to plain host via moved permanently */}}
+        server {
+            {{ if eq $autoRedirectDirection "0" }}
+            {{/* Redirect prefixed host to plain host via moved permanently */}}
     
-            server_name  {{ $prefix }}.{{ $host }};
-            listen 443 ssl;
-            rewrite ^(.*) https://{{ $host }}$1 permanent;
+                server_name  {{ $prefix }}.{{ $host }};
+                listen 443 ssl;
+                rewrite ^(.*) https://{{ $host }}$1 permanent;
     
-        {{ else }}
-        {{/* Redirect non-prefixed host to prefixed host via moved permanently */}}
+            {{ else }}
+            {{/* Redirect non-prefixed host to prefixed host via moved permanently */}}
     
-            server_name {{ $host }};
-            listen 443 ssl;
-            rewrite ^(.*) https://{{ $prefix }}.{{ $host }}$1 permanent;
+                server_name {{ $host }};
+                listen 443 ssl;
+                rewrite ^(.*) https://{{ $prefix }}.{{ $host }}$1 permanent;
     
-        {{/* AUTO_REDIRECT_DIRECTION end */}}
+            {{/* AUTO_REDIRECT_DIRECTION end */}}
+            {{ end }}
+        }
+
+        {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
         {{ end }}
-    }
 
-    {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end */}}
-    {{ end }}
+        {{ if (and (eq $forceSSL "1") (eq $allowHttp "0")) }}
+        {{/* Enforce https, redirect http */}}
+            server {
+                    server_name {{ $host }};
+                    rewrite ^(.*) https://{{ $host }}$1 permanent;
+            }
+        {{ end }}
 
-    {{ if (and (eq $forceSSL "1") (eq $allowHttp "0")) }}
-    {{/* Enforce https, redirect http */}}
+        {{ if eq $allowHttp "1" }}
         server {
                 server_name {{ $host }};
-                rewrite ^(.*) https://{{ $host }}$1 permanent;
-        }
-    {{ end }}
-
-    {{ if eq $allowHttp "1" }}
-    server {
-            server_name {{ $host }};
-            listen 80;
-            location / {
-                    proxy_pass {{ $proto }}://{{ $host }};
+                listen 80;
+                location / {
+                        proxy_pass {{ $proto }}://{{ $host }};
                 
+                        {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+                            auth_basic "Provide authentication for {{ $host }}";
+                            auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+                        {{ end }}
+                }
+        }
+        {{ end }}
+
+        {{/* SSL handling server */}}
+        server {
+                server_name {{ $host }};
+    
+                {{/* SPDY effect 1 */}}
+                {{ if eq $spdyEnabled "1" }}
+                    listen 443 ssl spdy;
+                {{ else }}
+                    listen 443 ssl;
+                {{ end }}
+    
+                ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+                ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA;
+
+                ssl_prefer_server_ciphers on;
+                ssl_session_timeout {{ $sslSessionTimeout }};
+                ssl_session_cache shared:SSL:{{ $sslSessionCache }};
+
+                {{ $certBundle := replace "ccii" "cc" $cert -1 }}
+                {{ $certBundle := replace $certBundle "ii" $infix -1 }}
+
+                ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
+                ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
+
+                {{/* SPDY effect 2 */}}
+                {{ if eq $spdyEnabled "1" }}
+                    add_header Alternate-Protocol  443:npn-spdy/3;
+                {{ end }}
+        
+                add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+
+                {{/* Custom include handling */}}
+                {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+                    include {{ printf "/etc/nginx/vhost.d/%s" $host }};
+                {{ end }}
+
+                location / {
+            
+                    {{/* Pass with proto optionally to provide forcing connection to backend via protocol like HTTPS if necessary */}}
+                    proxy_pass {{ $proto }}://{{ $host }};
+            
+                    {{/* Add basic auth if htpasswd dir contains a file named like the host */}}
                     {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                         auth_basic "Provide authentication for {{ $host }}";
                         auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
                     {{ end }}
-            }
-    }
-    {{ end }}
-
-    {{/* SSL handling server */}}
-    server {
-            server_name {{ $host }};
-    
-            {{/* SPDY effect 1 */}}
-            {{ if eq $spdyEnabled "1" }}
-                listen 443 ssl spdy;
-            {{ else }}
-                listen 443 ssl;
-            {{ end }}
-    
-            ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-            ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA;
-
-            ssl_prefer_server_ciphers on;
-            ssl_session_timeout {{ $sslSessionTimeout }};
-            ssl_session_cache shared:SSL:{{ $sslSessionCache }};
-
-            {{ $certBundle := replace "ccii" "cc" $cert -1 }}
-            {{ $certBundle := replace $certBundle "ii" $infix -1 }}
-
-            ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
-            ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
-
-            {{/* SPDY effect 2 */}}
-            {{ if eq $spdyEnabled "1" }}
-                add_header Alternate-Protocol  443:npn-spdy/3;
-            {{ end }}
-        
-            add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
-
-            {{/* Custom include handling */}}
-            {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-                include {{ printf "/etc/nginx/vhost.d/%s" $host }};
-            {{ end }}
-
-            location / {
-            
-                {{/* Pass with proto optionally to provide forcing connection to backend via protocol like HTTPS if necessary */}}
-                proxy_pass {{ $proto }}://{{ $host }};
-            
-                {{/* Add basic auth if htpasswd dir contains a file named like the host */}}
-                {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-                    auth_basic "Provide authentication for {{ $host }}";
-                    auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-                {{ end }}
-            }
-    }
+                }
+        }
 
     {{/* Valid HTTPS certificate and key files found. end */}}
     {{ else }} 
     {{/* Defaulting to HTTP. */}}
 
-    {{ if eq $autoRedirectEnabled "1" }}
+        {{ if eq $autoRedirectEnabled "1" }}
 
-    server {
-        {{ if eq $autoRedirectDirection "0" }}
+            server {
+                {{ if eq $autoRedirectDirection "0" }}
     
-            server_name  {{ $prefix }}.{{ $host }};
-            rewrite ^(.*) http://{{ $host }}$1 permanent;
+                    server_name  {{ $prefix }}.{{ $host }};
+                    rewrite ^(.*) http://{{ $host }}$1 permanent;
    
-        {{ else }}
+                {{ else }}
     
-            server_name {{ $host }};
-            rewrite ^(.*) http://{{ $prefix }}.{{ $host }}$1 permanent;
+                    server_name {{ $host }};
+                    rewrite ^(.*) http://{{ $prefix }}.{{ $host }}$1 permanent;
     
-        {{ end }}
-    }
-
-    {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end. */}}
-    {{ end }}
-
-    {{/* HTTP proxy */}}
-    server {
-            server_name {{ $host }};
-
-            {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-                include {{ printf "/etc/nginx/vhost.d/%s" $host }};
-            {{ end }}
-
-            location / {
-                    proxy_pass {{ $proto }}://{{ $host }};
-                
-                    {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-                        auth_basic "Provide authentication for {{ $host }}";
-                        auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-                    {{ end }}
+                {{ end }}
             }
-    }
 
-    {{ if (and (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
+        {{/* AUTO_REDIRECT_WITH_PREFIX_ENABLED end. */}}
+        {{ end }}
+
+        {{/* HTTP proxy */}}
         server {
                 server_name {{ $host }};
-                listen 443 ssl;
-                return {{ $unavailableService }};
 
-                ssl_certificate /etc/nginx/certs/default.crt;
-                ssl_certificate_key /etc/nginx/certs/default.key;
+                {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+                    include {{ printf "/etc/nginx/vhost.d/%s" $host }};
+                {{ end }}
+
+                location / {
+                        proxy_pass {{ $proto }}://{{ $host }};
+                
+                        {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+                            auth_basic "Provide authentication for {{ $host }}";
+                            auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+                        {{ end }}
+                }
         }
-    {{ end }}
+
+        {{ if (and (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
+            server {
+                    server_name {{ $host }};
+                    listen 443 ssl;
+                    return {{ $unavailableService }};
+
+                    ssl_certificate /etc/nginx/certs/default.crt;
+                    ssl_certificate_key /etc/nginx/certs/default.key;
+            }
+        {{ end }}
 
     {{/* MAIN server configuration task. end */}}
     {{ end }}

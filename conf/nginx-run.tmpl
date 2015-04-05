@@ -52,9 +52,9 @@ server {
     server_name {{ $host }};
     listen 80;
     location / {
-    proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-    auth_basic "Provide authentication for {{ $host }}";
-    auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
+        proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+        auth_basic "Provide authentication for {{ $host }}";
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
     }
 } {{ end }}
 server {
