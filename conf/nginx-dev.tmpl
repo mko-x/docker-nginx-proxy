@@ -89,11 +89,13 @@ server {
 
 {{/* MAIN VIRTUAL_HOST generation. */}}
 {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
-    {{ $host := first ( split $hostAndPort ":" ) }}
+    {{ $hostAndPortArray := split $hostAndPort ":" }}
+    {{ $host := first $hostAndPortArray }}
     {{ $path := replace $hostAndPort $host "" 1 }}
     
-    {{ if contains $hostAndPort ":" }}
-        {{ $port := last ( split $hostAndPort ":" ) }}
+    {{ $hostAndPortLen := len $hostAndPortArray }}
+    {{ if gt $hostAndPortLen 1 }}
+        {{ $port := last hostAndPortArray }}
         {{ $port := first ( split $port "/" ) }}
         {{ $path := replace $path $port "" 1 }}
         {{ $path := replace $path ":" "" 1 }}
