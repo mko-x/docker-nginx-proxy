@@ -3,44 +3,6 @@ MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 
 ENV GLOB_TMPL_MODE run
 
-# install packages
-RUN apt-get update -y -qq \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-    ca-certificates \
-    wget \
-    cron \
- && apt-get clean -y -qq \
- && rm -r /var/lib/apt/lists/*
- 
- # Install Forego
-RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
- && chmod u+x /usr/local/bin/forego
-
-ENV DOCKER_GEN_VERSION 0.3.9
-
-RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
-
- # add late as tmpl is most modified part and less content needs to be rebuilt
-ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl /app/nginx.tmpl
-ADD ./conf/Procfile /app/
-
-RUN rm -f /etc/nginx/nginx.conf
-ADD ./conf/nginx.conf /etc/nginx/
-
-ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
-RUN chmod +x /usr/local/sbin/rotate_nginx_log.sh
-
-#RUN mkdir -p /tmp
-#RUN crontab -l > /tmp/tmpcron
-RUN mkdir -p /etc/cron.d
-RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_log
-#RUN crontab /tmp/tmpcron
-#RUN rm -f /tmp/tmpcron
-
-WORKDIR /app/
-
 # set max size within a body
 ENV GLOB_MAX_BODY_SIZE 10m
 
@@ -81,6 +43,41 @@ ENV GLOB_ALLOW_HTTP_FALLBACK "0"
 
 # connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
+
+# install packages
+RUN apt-get update -y -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+    ca-certificates \
+    wget \
+    cron \
+ && apt-get clean -y -qq \
+ && rm -r /var/lib/apt/lists/*
+ 
+ # Install Forego
+RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
+ && chmod u+x /usr/local/bin/forego
+
+ENV DOCKER_GEN_VERSION 0.3.9
+
+RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+ && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+ && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
+
+ADD ./conf/Procfile /app/
+
+RUN rm -f /etc/nginx/nginx.conf
+ADD ./conf/nginx.conf /etc/nginx/
+
+ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
+RUN chmod +x /usr/local/sbin/rotate_nginx_log.sh
+
+RUN mkdir -p /etc/cron.d
+RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_log
+
+WORKDIR /app/
+
+ # add late, as tmpl is most modified part and less content needs to be rebuilt
+ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
 

@@ -28,7 +28,7 @@ server {
         listen 80 default_server;
         server_name _;
         return {{ $unavailableService }};
-} {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }} {{ $hostAndPortArray := split $hostAndPort ":" }} {{ $host := first $hostAndPortArray }} {{ $path := replace $hostAndPort $host "" 1 }} {{ $hostAndPortLen := len $hostAndPortArray }} {{ if gt $hostAndPortLen 1 }} {{ $port := last hostAndPortArray }} {{ $port := first ( split $port "/" ) }} {{ $path := replace $path $port "" 1 }} {{ $path := replace $path ":" "" 1 }} {{ end }}
+} {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }} {{ $hostAndPortArray := split $hostAndPort ":" }} {{ $host := first $hostAndPortArray }} {{ $path := replace $hostAndPort $host "" 1 }} {{ $hostAndPortLen := len $hostAndPortArray }} {{ if gt $hostAndPortLen 1 }} {{ $port := last $hostAndPortArray }} {{ $port := first ( split $port "/" ) }} {{ $path := replace $path $port "" 1 }} {{ $path := replace $path ":" "" 1 }} {{ end }}
 upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len $container.Addresses }} {{ if eq $addrLen 1 }} {{ with $address := index $container.Addresses 0 }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ else if ne $port "none" }} {{ range $address := .Addresses }} {{ if eq $address.Port $port }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else if $container.Env.VIRTUAL_PORT }} {{ range $address := .Addresses }} {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
