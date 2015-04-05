@@ -1,4 +1,4 @@
-# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $forceSSL := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $listen := 80 }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
+# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $forceSSL := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $port := "none" }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
   default $http_x_forwarded_proto;
   ''      $scheme;
@@ -28,9 +28,9 @@ server {
         listen 80 default_server;
         server_name _;
         return {{ $unavailableService }};
-} {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }} {{ $host := first ( split $hostAndPort ":" ) }} {{ $path := replace $hostAndPort $host "" 1 }} {{ if contains $hostAndPort ":" }} {{ $port := last ( split $hostAndPort ":" ) }} {{ $path := replace $path $port "" 1 }} {{ $path := replace $path ":" "" 1 }} {{ end }}
+} {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }} {{ $host := first ( split $hostAndPort ":" ) }} {{ $path := replace $hostAndPort $host "" 1 }} {{ if contains $hostAndPort ":" }} {{ $port := last ( split $hostAndPort ":" ) }} {{ $port := first ( split $port "/" ) }} {{ $path := replace $path $port "" 1 }} {{ $path := replace $path ":" "" 1 }} {{ end }}
 upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len $container.Addresses }} {{ if eq $addrLen 1 }} {{ with $address := index $container.Addresses 0 }}
-    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ else if ($port) }} {{ range $address := .Addresses }} {{ if eq $address.Port $port }}
+    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ else if ne $port "none" }} {{ range $address := .Addresses }} {{ if eq $address.Port $port }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else if $container.Env.VIRTUAL_PORT }} {{ range $address := .Addresses }} {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else }} {{ range $address := $container.Addresses }} {{ if eq $address.Port "80" }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ end }} {{ end }}

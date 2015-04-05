@@ -8,7 +8,7 @@
 {{ $forceSSL := "1" }}
 {{ $spdyEnabled := "0" }}
 {{ $allowHttp := "0" }}
-{{ $listen := 80 }}
+{{ $port := "none" }}
 
 {{/* Global env var assignments */}}
 {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
@@ -94,6 +94,7 @@ server {
     
     {{ if contains $hostAndPort ":" }}
         {{ $port := last ( split $hostAndPort ":" ) }}
+        {{ $port := first ( split $port "/" ) }}
         {{ $path := replace $path $port "" 1 }}
         {{ $path := replace $path ":" "" 1 }}
     {{ end }}
@@ -114,7 +115,7 @@ server {
             # {{$container.Name}}.single 
             server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
     		{{ end }}
-        {{ else if ($port) }}
+        {{ else if ne $port "none" }}
         {{/* Address/Port count != 1, target port via ':' seperator provided */}}
 
             {{ range $address := .Addresses }}
