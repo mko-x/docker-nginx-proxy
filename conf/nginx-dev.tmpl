@@ -92,7 +92,7 @@ server {
     {{ $host := first ( split $hostAndPort ":" ) }}
     {{ $path := replace $hostAndPort $host "" 1 }}
     
-    {{ if Contains($hostAndPort, ":") }}
+    {{ if contains $hostAndPort ":" }}
         {{ $port := last ( split $hostAndPort ":" ) }}
         {{ $path := replace $path $port "" 1 }}
         {{ $path := replace $path ":" "" 1 }}
