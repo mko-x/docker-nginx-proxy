@@ -32,8 +32,9 @@ server {
 upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len $container.Addresses }} {{ if eq $addrLen 1 }} {{ with $address := index $container.Addresses 0 }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ else if ne $port "none" }} {{ range $address := .Addresses }} {{ if eq $address.Port $port }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else if $container.Env.VIRTUAL_PORT }} {{ range $address := .Addresses }} {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
-    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else }} {{ range $address := $container.Addresses }} {{ if eq $address.Port "80" }}
-    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ end }} {{ end }}
+    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else }} {{ $foundhttp := "false" }} {{ range $address := $container.Addresses }} {{ if eq $address.Port "80" }}
+    server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ if ne $foundhttp "true" }} {{ $saddress := first $container.Addresses }}
+    server {{ $saddress.IP }}:{{ $saddress.Port }}{{ $path }}; {{ end }}{{ end }} {{ end }} {{ end }} {{ end }}
 } {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
 server { {{ if eq $autoRedirectDirection "0" }}    
     server_name  {{ $prefix }}.{{ $host }};
