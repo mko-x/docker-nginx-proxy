@@ -1,6 +1,8 @@
 FROM nginx:1.7.11
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 
+ENV GLOB_TMPL_MODE run
+
 # install packages
 RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
@@ -21,7 +23,7 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
  # add late as tmpl is most modified part and less content needs to be rebuilt
-ADD ./conf/nginx.tmpl /app/
+ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl /app/nginx.tmpl
 ADD ./conf/Procfile /app/
 
 RUN rm -f /etc/nginx/nginx.conf
