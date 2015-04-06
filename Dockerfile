@@ -93,7 +93,7 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
 ADD ./conf/Procfile /app/
 
 # Put clean nginx conf
-RUN rm -f /etc/nginx/*
+RUN rm -rf /etc/nginx/*
 ADD ./conf/nginx.conf /etc/nginx/
 
 # Update nginx conf
