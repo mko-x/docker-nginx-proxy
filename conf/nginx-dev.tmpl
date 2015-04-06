@@ -142,7 +142,6 @@ server {
 	
     	{{ else }}
         {{/* Try to default to standard web port 80  */}}
-        	{{ $foundhttp := "false" }}
         	{{ range $address := $container.Addresses }}
 
                 {{ if eq $address.Port "80" }}
@@ -154,12 +153,6 @@ server {
 
             {{/* $container.Addresses end */}}
     		{{ end }}
-            
-            {{ if eq $foundhttp "false" }}
-                {{ $saddress := first $container.Addresses }}
-                # {{$container.Name}}.fallback
-                server {{ $saddress.IP }}:{{ $saddress.Port }}{{ $path }};
-            {{ end }}
 
         {{/* ADRESSING SWITCH. end */}}
     	{{ end }}
