@@ -3,7 +3,7 @@ set -e
 
 echo "Writing proxy global config..."
 
-echo "Proxy User Name: ${GLOB_PROXY_USER_NAME}"
+echo "Proxy User Name: $GLOB_PROXY_USER_NAME"
 sed -i -e "s,S3dProxyUser,user ${GLOB_PROXY_USER_NAME};,g"
 
 echo "Proxy Worker Process Count: ${GLOB_WORKER_COUNT}"
