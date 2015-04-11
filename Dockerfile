@@ -97,8 +97,8 @@ RUN rm -rf /etc/nginx/*
 ADD ./conf/nginx.conf /etc/nginx/
 
 # Update nginx conf
-# ADD ./conf/prepare.sh /up/prepare.sh
-# RUN chmod a+x /up/prepare.sh && cd /up && ./prepare.sh && rm -rf /up
+ADD ./conf/prepare.sh /up/prepare.sh
+RUN chmod a+x /up/prepare.sh && cd /up && ./prepare.sh && rm -rf /up
 
 #RUN sed -i -e "s,S3dProxyUser,user ${GLOB_USER_NAME};,g" /etc/nginx/nginx.conf
 #RUN sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
