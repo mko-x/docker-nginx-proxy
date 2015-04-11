@@ -4,7 +4,7 @@ set -e
 echo "Writing proxy global config..."
 
 echo "Proxy User Name: $GLOB_PROXY_USER_NAME"
-sed -i -e "s,S3dProxyUser,user ${GLOB_PROXY_USER_NAME};,g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dProxyUser,user ${GLOB_USER_NAME};,g" /etc/nginx/nginx.conf
 
 echo "Proxy Worker Process Count: ${GLOB_WORKER_COUNT}"
 sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
