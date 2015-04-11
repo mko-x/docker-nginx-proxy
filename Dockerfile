@@ -100,13 +100,13 @@ ADD ./conf/nginx.conf /etc/nginx/
 # ADD ./conf/prepare.sh /up/prepare.sh
 # RUN chmod a+x /up/prepare.sh && cd /up && ./prepare.sh && rm -rf /up
 
-RUN sed -i -e "s,S3dProxyUser,user ${GLOB_PROXY_USER_NAME};,g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dKeepAliveTimeout,${GLOB_KEEPALIVE_TIMEOUT},g" /etc/nginx/nginx.conf
-RUN sed -i -e "s,S3dMaxFileHandles,${GLOB_WORKER_RLIMIT_NOFILE},g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dProxyUser,user ${GLOB_USER_NAME};,g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dKeepAliveTimeout,${GLOB_KEEPALIVE_TIMEOUT},g" /etc/nginx/nginx.conf
+#RUN sed -i -e "s,S3dMaxFileHandles,${GLOB_WORKER_RLIMIT_NOFILE},g" /etc/nginx/nginx.conf
 
 # Schedule log rotation
 ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh

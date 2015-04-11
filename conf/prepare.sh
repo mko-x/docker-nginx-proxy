@@ -4,25 +4,25 @@ set -e
 echo "Writing proxy global config..."
 
 echo "Proxy User Name: $GLOB_PROXY_USER_NAME"
-#sed -i -e "s,S3dProxyUser,user ${GLOB_PROXY_USER_NAME};,g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dProxyUser,user ${GLOB_PROXY_USER_NAME};,g" /etc/nginx/nginx.conf
 
 echo "Proxy Worker Process Count: ${GLOB_WORKER_COUNT}"
-#sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
 
 echo "Proxy Error Log Level: ${GLOB_ERROR_LOG_LEVEL}"
-#sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
 
 echo "Proxy Worker Connections Count: ${GLOB_WORKER_CONNECTIONS}"
-#sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
 
 echo "Proxy Accepting Multiple Connections at once: "
-#sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
 
 echo "Proxy KeepAlive Timeout: ${GLOB_KEEPALIVE_TIMEOUT}"
-#sed -i -e "s,S3dKeepAliveTimeout,${GLOB_KEEPALIVE_TIMEOUT},g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dKeepAliveTimeout,${GLOB_KEEPALIVE_TIMEOUT},g" /etc/nginx/nginx.conf
 
 echo "Proxy Maximum Amount of File Handles: ${GLOB_WORKER_RLIMIT_NOFILE}"
-#sed -i -e "s,S3dMaxFileHandles,${GLOB_WORKER_RLIMIT_NOFILE},g" /etc/nginx/nginx.conf
+sed -i -e "s,S3dMaxFileHandles,${GLOB_WORKER_RLIMIT_NOFILE},g" /etc/nginx/nginx.conf
 
 if [ "$GLOB_PROXY_CACHE_ENABLE" == "1" ]; then
   echo "Proxy Cache Enabled: Yes"
