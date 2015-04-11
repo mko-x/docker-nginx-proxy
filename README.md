@@ -46,16 +46,15 @@ See also readme data at Jason's [github repo](https://github.com/jwilder/nginx-p
 
 # Contains
 
-<dl> 
-<dt>[nginx](http://nginx.org/ru/)</dt>
-<dd>![nginx 1.7.11](https://img.shields.io/badge/nginx-1.7.11-brightgreen.svg?style=flat-square)</dd>
 
-<dt>[docker-gen](https://github.com/jwilder/docker-gen)</dt>
-<dd>&nbsp;&nbsp;![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)</dd>
+[nginx](http://nginx.org/ru/)
+![nginx 1.7.11](https://img.shields.io/badge/nginx-1.7.11-brightgreen.svg?style=flat-square)
 
-<dt>[forego](https://github.com/ddollar/forego)</dt>
-<dd>![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)</dd>
-</dl>
+[docker-gen](https://github.com/jwilder/docker-gen)
+&nbsp;&nbsp;&nbsp;&nbsp;![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
+
+[forego](https://github.com/ddollar/forego)
+![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
 
 ---
 
