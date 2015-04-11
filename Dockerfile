@@ -95,6 +95,7 @@ ADD ./conf/Procfile /app/
 # Put clean nginx conf
 RUN rm -rf /etc/nginx/*
 ADD ./conf/nginx.conf /etc/nginx/
+ADD ./conf/mime.types /etc/nginx/
 
 # Update nginx conf
 ADD ./conf/prepare.sh /up/prepare.sh
