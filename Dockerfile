@@ -38,6 +38,17 @@ ENV GLOB_SSL_SESSION_TIMEOUT 5m
 # Set default shared session cache
 ENV GLOB_SSL_SESSION_CACHE 50m
 
+# Enable Online Certificate Status Protocol (OCSP) through setting this value to any > 0.
+# See http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_stapling
+ENV GLOB_SSL_OCSP_VALID_TIME "0"
+
+# DNS servers to resolve the certificate verification from. Unused if GLOB_SSL_OCSP_VALID_TIME <= 0
+# Uses OpenNicProject server first and will fall back to google one's. You can use only google's as well with "8.8.4.4 8.8.8.8"
+ENV GLOB_SSL_OCSP_DNS_ADDRESSES "5.9.49.12 8.8.8.8"
+
+# Timeout when verifying certificates. Unused if GLOB_SSL_OCSP_VALID_TIME <= 0
+ENV GLOB_SSL_OCSP_DNS_TIMEOUT "10s"
+
 # Sctivate SPDY support
 # More info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
 ENV GLOB_SPDY_ENABLED "0"

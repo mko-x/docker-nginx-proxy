@@ -24,6 +24,11 @@
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }}
+
+{{ $sslOcspValidTime := .Env.GLOB_SSL_OCSP_VALID_TIME }}
+{{ $sslOcspDnsAdresses := .Env.GLOB_SSL_OCSP_DNS_ADDRESSES }}
+{{ $sslOcspDnsTimeout := .Env.GLOB_SSL_OCSP_DNS_TIMEOUT }}
+
 {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
 
 {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }}
@@ -249,6 +254,14 @@ server {
                 ssl_prefer_server_ciphers on;
                 ssl_session_timeout {{ $sslSessionTimeout }};
                 ssl_session_cache shared:SSL:{{ $sslSessionCache }};
+
+                {{/* Support for Online Certificate Status Protocol (OCSP)/Stapling */}}
+                {{ if ne $sslOcspValidTime "0" }}
+                    ssl_stapling on;
+                    ssl_stapling_verify on;
+                    resolver {{ $sslOcspDnsAdresses }} valid={{ $sslOcspValidTime }};
+                    resolver_timeout {{ $sslOcspDnsTimeout }};
+                {{ end }} {{/* OCSP */}}
 
                 {{ $certBundle := replace "ccii" "cc" $cert -1 }}
                 {{ $certBundle := replace $certBundle "ii" $infix -1 }}

@@ -110,6 +110,27 @@ Modify size of shared ssl session cache.
 See [nginx ssl docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache)
 ### Default: 50m
 
+## GLOB_SSL_OCSP_VALID_TIME
+### Info
+Enable Online Certificate Status Protocol (OCSP) through setting this value to any != 0. If 0, GLOB_SSL_OCSP_DNS_ADDRESSES and GLOB_SSL_OCSP_DNS_TIMEOUT are ignored. 
+### Link
+See [nginx stapling](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_stapling) for details
+### Default: 0 (disabled)
+
+## GLOB_SSL_OCSP_DNS_ADDRESSES
+### Info
+DNS servers (2) to resolve the certificate verification from. Unused if GLOB_SSL_OCSP_VALID_TIME = 0. Uses [OpenNicProject](http://www.opennicproject.org/) DNS server one of google's. You can use google one's only as well with e.g. "8.8.4.4 8.8.8.8".
+### Link
+See [nginx resolver](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
+### Default: 5.9.49.12 8.8.8.8
+
+## GLOB_SSL_OCSP_DNS_TIMEOUT
+### Info
+Timeout for name resolution. Unused if GLOB_SSL_OCSP_VALID_TIME = 0.
+### Link
+See [nginx resolver](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
+### Default: 10s
+
 ## GLOB_HTTPS_FORCE
 ### Info
 Redirect calls via http to https.
