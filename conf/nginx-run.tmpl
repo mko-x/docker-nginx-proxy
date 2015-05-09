@@ -73,7 +73,8 @@ server {
     ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
     ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }}; {{ if eq $spdyEnabled "1" }}
     add_header Alternate-Protocol  443:npn-spdy/3; {{ end }}
-    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains"; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+    add_header X-Frame-Options SAMEORIGIN; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
