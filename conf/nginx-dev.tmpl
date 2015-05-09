@@ -49,18 +49,14 @@
 # ssl session timeout: {{$sslSessionTimeout}}
 # ssl session cache size: {{$sslSessionCache}}
 
-# If we receive X-Forwarded-Proto, pass it through; otherwise, pass along the
-# scheme used to connect to this server
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
   default $http_x_forwarded_proto;
   ''      $scheme;
 }
 
-# If we receive Upgrade, set Connection to "upgrade"; otherwise, delete any
-# Connection header that may have been passed to this server
 map $http_upgrade $proxy_connection {
   default upgrade;
-  ''      '';
+  ''      close;
 }
 
 gzip_types text/plain text/css application/javascript application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
@@ -74,7 +70,6 @@ error_log /proc/self/fd/2;
 
 client_max_body_size {{ .Env.GLOB_MAX_BODY_SIZE }};
 
-# HTTP 1.1 support
 proxy_http_version 1.1;
 proxy_buffering off;
 proxy_set_header Host $http_host;
@@ -118,7 +113,7 @@ server {
     	{{/* Address/Port count == 1, use the only one */}}
     
     		{{ with $address := index $container.Addresses 0 }}
-            # {{$container.Name}}.single 
+            # {{$container.Name}}.single-port
             server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
     		{{ end }}
         {{ else if ne $port "none" }}
@@ -127,7 +122,7 @@ server {
             {{ range $address := .Addresses }}
 
                 {{ if eq $address.Port $port }}
-                    # {{$container.Name}}.explicit
+                    # {{$container.Name}}.virtual-port-from-host
                     server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
                 {{ end }}
 
@@ -138,19 +133,19 @@ server {
     		{{ range $address := .Addresses }}
         
     		   {{ if eq $address.Port $container.Env.VIRTUAL_PORT }}
-            # {{$container.Name}}.explicit
+            # {{$container.Name}}.virtual-port-from-env
             server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
     		   {{ end }}
            
     		{{ end }}
 	
     	{{ else }}
-        {{/* Try to default to standard web port 80  */}}
+        {{/* Try to fall back to standard web port 80  */}}
         	{{ range $address := $container.Addresses }}
 
                 {{ if eq $address.Port "80" }}
 
-                    # {{$container.Name}}.default
+                    # {{$container.Name}}.fallback
                     server {{ $address.IP }}:{{ $address.Port }}{{ $path }};
                     {{ $foundhttp := "true" }}
                 {{ end }}
