@@ -275,6 +275,7 @@ server {
                 {{ end }}
         
                 add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+                add_header X-Frame-Options SAMEORIGIN;
 
                 {{/* Custom include handling */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
