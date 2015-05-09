@@ -1,5 +1,26 @@
-FROM nginx:1.7.11
+FROM nginx:1.9.0
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
+
+# Install packages
+RUN apt-get update -y -qq \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+    ca-certificates \
+    wget \
+    cron \
+ && apt-get clean -y -qq \
+ && rm -r /var/lib/apt/lists/*
+ 
+# Install Forego
+RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
+ && chmod u+x /usr/local/bin/forego
+
+# Set docker gen version to use
+ENV DOCKER_GEN_VERSION 0.3.9
+
+# Install Docker-Gen
+RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+ && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+ && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
 # Choose the template to run, you may use dev for experimental use
 ENV GLOB_TMPL_MODE run
@@ -71,27 +92,6 @@ ENV GLOB_UPSTREAM_IDLE_CONNECTIONS 0
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
-# Set docker gen version to use
-ENV DOCKER_GEN_VERSION 0.3.9
-
-# Install packages
-RUN apt-get update -y -qq \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
-    ca-certificates \
-    wget \
-    cron \
- && apt-get clean -y -qq \
- && rm -r /var/lib/apt/lists/*
- 
-# Install Forego
-RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
- && chmod u+x /usr/local/bin/forego
-
-# Install Docker-Gen
-RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
-
 # Add PID file for the process
 ADD ./conf/Procfile /app/
 
@@ -103,14 +103,6 @@ ADD ./conf/mime.types /etc/nginx/
 # Update nginx conf
 ADD ./conf/prepare.sh /up/prepare.sh
 RUN chmod a+x /up/prepare.sh && cd /up && ./prepare.sh && rm -rf /up
-
-#RUN sed -i -e "s,S3dProxyUser,user ${GLOB_USER_NAME};,g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dProxyWorker,worker_processes ${GLOB_WORKER_COUNT};,g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dKeepAliveTimeout,${GLOB_KEEPALIVE_TIMEOUT},g" /etc/nginx/nginx.conf
-#RUN sed -i -e "s,S3dMaxFileHandles,${GLOB_WORKER_RLIMIT_NOFILE},g" /etc/nginx/nginx.conf
 
 # Schedule log rotation
 ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
