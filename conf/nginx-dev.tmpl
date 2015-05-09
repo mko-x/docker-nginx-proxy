@@ -193,6 +193,9 @@ server {
         {{ if eq $autoRedirectEnabled "1" }}
 
         server {
+            
+            {{/* Security limits */}}
+            limit_conn perip 10;
             {{ if eq $autoRedirectDirection "0" }}
             {{/* Redirect prefixed host to plain host via moved permanently */}}
     
@@ -239,6 +242,8 @@ server {
 
         {{/* SSL handling server */}}
         server {
+                {{/* Security limits */}}
+                limit_conn perip 10;
                 server_name {{ $host }};
     
                 {{/* SPDY effect 1 */}}
@@ -323,6 +328,8 @@ server {
         server {
                 server_name {{ $host }};
 
+                {{/* Security limits */}}
+                limit_conn perip 5;
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
