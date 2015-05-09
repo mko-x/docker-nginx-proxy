@@ -65,6 +65,9 @@ ENV GLOB_ERROR_LOG_LEVEL error
 # Time the server keeps the connection active without request from client
 ENV GLOB_KEEPALIVE_TIMEOUT 60
 
+# Number of idle connections to upstream services to keep and don't waste time for TCP handshaking etc.
+ENV GLOB_UPSTREAM_IDLE_CONNECTIONS 0
+
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 

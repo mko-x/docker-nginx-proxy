@@ -9,6 +9,7 @@
 {{ $spdyEnabled := "0" }}
 {{ $allowHttp := "0" }}
 {{ $port := "none" }}
+{{ $upIdleConnections := "0" }}
 
 {{/* Global env var assignments */}}
 {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
@@ -19,10 +20,13 @@
 
 {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }}
 {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }}
+
 {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }}
 {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }}
 {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }}
 {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
+
+{{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }}
 
 ## configuration input check
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
@@ -157,6 +161,11 @@ server {
         {{/* ADRESSING SWITCH. end */}}
     	{{ end }}
     
+        {{/* Keep idle connections to upstream services, so there is no need for TCP handshaking latency etc.*/}}
+        {{ if ne $upIdleConnections "0" }}
+            keepalive {{ $upIdleConnections }};
+        {{ end }}
+        
     {{/* UPSTREAM GENERATION. end */}}
     {{ end }}
     }
