@@ -196,6 +196,8 @@ server {
             
             {{/* Security limits */}}
             limit_conn perip 10;
+            limit_req zone=delta burst=80 nodelay;
+            
             {{ if eq $autoRedirectDirection "0" }}
             {{/* Redirect prefixed host to plain host via moved permanently */}}
     
@@ -244,6 +246,8 @@ server {
         server {
                 {{/* Security limits */}}
                 limit_conn perip 10;
+                limit_req zone=delta burst=80 nodelay;
+                
                 server_name {{ $host }};
     
                 {{/* SPDY effect 1 */}}
@@ -330,6 +334,8 @@ server {
 
                 {{/* Security limits */}}
                 limit_conn perip 5;
+                limit_req zone=delta burst=80 nodelay;
+
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
