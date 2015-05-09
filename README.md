@@ -60,7 +60,7 @@ See also readme data at Jason's [github repo](https://github.com/jwilder/nginx-p
 
 # Modifications
 
-To make Jason's nginx-proxy more *configurable* without having to provide custom configs/includes, I added several **environment variables**. All of them change the global behavior of nginx or it's configured servers within the templating engine (starting with "*GLOB_*"). 
+To make Jason's nginx-proxy more *configurable* for me without having to provide custom configs/includes, I added several **environment variables**. All of them change the global behavior of nginx or it's configured servers within the templating engine (starting with "*GLOB_*"). Excuse me Jason, I know you try to minimize amount of environment variables.
 
 Another aim is to increase **performance** especially in multiple full ssl based environments - forcing ssl by default. It allows multilevel proxy data caching out of the box.
 
@@ -196,6 +196,11 @@ Sets the loglevel for the **error** log output to print.
 ### Info
 The time a worker will hold a connection to a client without a request in seconds.
 ### Default 60
+
+## GLOB_UPSTREAM_IDLE_CONNECTIONS
+### Info
+The number of connections to the upstream backend services that will be kept idle at maximum from nginx. It's turned off by default but with setting a value like 20 - there are always some idle connections available. This reduces the amount of HTTP/TCP connections that need to be created from scratch. This avoids the so called [HTTP Heavy Lifting](http://nginx.com/blog/http-keepalives-and-web-performance/)
+### Default 0
 
 ## GLOB_TMPL_MODE
 ### Info
