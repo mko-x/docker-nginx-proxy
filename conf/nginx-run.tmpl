@@ -63,7 +63,11 @@ server {
     listen 443 ssl; {{ end }}
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
     ssl_ciphers 'AES128+EECDH:AES128+EDH:!aNULL';
-    ssl_prefer_server_ciphers on;
+    ssl_prefer_server_ciphers on;{{ if ne $sslOcspValidTime "0" }}
+    ssl_stapling on;
+    ssl_stapling_verify on;
+    resolver {{ $sslOcspDnsAdresses }} valid={{ $sslOcspValidTime }};
+    resolver_timeout {{ $sslOcspDnsTimeout }}; {{ end }}
     ssl_session_timeout {{ $sslSessionTimeout }};
     ssl_session_cache shared:SSL:{{ $sslSessionCache }}; {{ $certBundle := replace "ccii" "cc" $cert -1 }} {{ $certBundle := replace $certBundle "ii" $infix -1 }}
     ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
