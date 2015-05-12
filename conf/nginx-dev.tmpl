@@ -246,7 +246,7 @@ server {
         server {
                 {{/* Security limits */}}
                 limit_conn perip 10;
-                limit_req zone=delta burst=80 nodelay;
+                limit_req zone=persec burst=80 nodelay;
                 
                 server_name {{ $host }};
     
@@ -334,7 +334,7 @@ server {
 
                 {{/* Security limits */}}
                 limit_conn perip 5;
-                limit_req zone=delta burst=80 nodelay;
+                limit_req zone=persec burst=80 nodelay;
 
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};

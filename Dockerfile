@@ -4,12 +4,6 @@ MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 # rm default conf data from parent image
 RUN rm -rf /etc/nginx/*
 
-# Add content early as modified less often
-ADD ./conf/Procfile /app/
-ADD ./conf/mime.types /etc/nginx/
-ADD ./conf/prepare.sh /up/prepare.sh
-ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
-
 # Install packages
 RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
@@ -30,6 +24,13 @@ ENV DOCKER_GEN_VERSION 0.3.9
 RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
  && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
+
+# Add content early as modified less often
+ADD ./conf/Procfile /app/
+ADD ./conf/mime.types /etc/nginx/
+ADD ./conf/nginx.conf /etc/nginx/
+ADD ./conf/prepare.sh /up/prepare.sh
+ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
 
 # Choose the template to run, you may use dev for experimental use
 ENV GLOB_TMPL_MODE run
@@ -124,7 +125,6 @@ RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_lo
 WORKDIR /app/
 
 # Add late, as tmpl is most modified part and less content needs to be rebuilt
-ADD ./conf/nginx.conf /etc/nginx/
 ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]

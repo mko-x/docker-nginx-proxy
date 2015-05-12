@@ -38,7 +38,7 @@ upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len 
 } {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
 server {
     limit_conn perip 10;
-    limit_req zone=delta burst=80 nodelay; {{ if eq $autoRedirectDirection "0" }}    
+    limit_req zone=persec burst=80 nodelay; {{ if eq $autoRedirectDirection "0" }}    
     server_name  {{ $prefix }}.{{ $host }};
     listen 443 ssl;
     rewrite ^(.*) https://{{ $host }}$1 permanent; {{ else }}
@@ -61,7 +61,7 @@ server {
 } {{ end }}
 server {
     limit_conn perip 10;
-    limit_req zone=delta burst=80 nodelay;
+    limit_req zone=persec burst=80 nodelay;
     server_name {{ $host }}; {{ if eq $spdyEnabled "1" }}
     listen 443 ssl spdy; {{ else }}
     listen 443 ssl; {{ end }}
