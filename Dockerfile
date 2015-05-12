@@ -6,7 +6,6 @@ RUN rm -rf /etc/nginx/*
 
 # Add content early as modified less often
 ADD ./conf/Procfile /app/
-ADD ./conf/nginx.conf /etc/nginx/
 ADD ./conf/mime.types /etc/nginx/
 ADD ./conf/prepare.sh /up/prepare.sh
 ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
@@ -125,6 +124,7 @@ RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_lo
 WORKDIR /app/
 
 # Add late, as tmpl is most modified part and less content needs to be rebuilt
+ADD ./conf/nginx.conf /etc/nginx/
 ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
