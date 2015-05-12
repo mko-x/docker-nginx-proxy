@@ -196,7 +196,7 @@ server {
             
             {{/* Security limits */}}
             limit_conn perip 10;
-            limit_req zone=delta burst=80 nodelay;
+            limit_req zone=persec burst=80 nodelay;
             
             {{ if eq $autoRedirectDirection "0" }}
             {{/* Redirect prefixed host to plain host via moved permanently */}}
