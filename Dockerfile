@@ -1,6 +1,16 @@
 FROM nginx:1.9.0
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 
+# rm default conf data from parent image
+RUN rm -rf /etc/nginx/*
+
+# Add content early as modified less often
+ADD ./conf/Procfile /app/
+ADD ./conf/nginx.conf /etc/nginx/
+ADD ./conf/mime.types /etc/nginx/
+ADD ./conf/prepare.sh /up/prepare.sh
+ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
+
 # Install packages
 RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
@@ -49,7 +59,7 @@ ENV GLOB_SSL_OCSP_DNS_ADDRESSES "5.9.49.12 8.8.8.8"
 # Timeout when verifying certificates. Unused if GLOB_SSL_OCSP_VALID_TIME <= 0
 ENV GLOB_SSL_OCSP_DNS_TIMEOUT "10s"
 
-# Sctivate SPDY support
+# Control SPDY support
 # More info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
 ENV GLOB_SPDY_ENABLED "0"
 
@@ -70,7 +80,7 @@ ENV GLOB_AUTO_REDIRECT_DIRECTION "0"
 # Only allow ssl
 ENV GLOB_HTTPS_FORCE "1"
 
-# Allow to use http only if https is not available
+# Optional allows non-ssl
 ENV GLOB_ALLOW_HTTP_FALLBACK "0"
 
 # User to run the proxy
@@ -103,20 +113,10 @@ ENV GLOB_UPSTREAM_IDLE_CONNECTIONS 0
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
-# Add PID file for the process
-ADD ./conf/Procfile /app/
+RUN chmod a+x /up/prepare.sh && ./up/prepare.sh 
+RUN rm -rf /up
 
-# Put clean nginx conf
-RUN rm -rf /etc/nginx/*
-ADD ./conf/nginx.conf /etc/nginx/
-ADD ./conf/mime.types /etc/nginx/
-
-# Update nginx conf
-ADD ./conf/prepare.sh /up/prepare.sh
-RUN chmod a+x /up/prepare.sh && cd /up && ./prepare.sh && rm -rf /up
-
-# Schedule log rotation
-ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
+# Configure and schedule log rotation
 RUN chmod +x /usr/local/sbin/rotate_nginx_log.sh
 RUN mkdir -p /etc/cron.d
 RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_log
