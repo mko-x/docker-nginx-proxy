@@ -1,0 +1,9 @@
+proxy:
+    build: .
+    extends:
+        file: dc-modules/proxy.yml
+        service: proxy
+proxyssl:
+    extends:
+        file: dc-modules/proxyssl.yml
+        service: proxyssl
