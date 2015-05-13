@@ -195,7 +195,7 @@ server {
         server {
             
             {{/* Security limits */}}
-            limit_conn perip 10;
+            limit_conn perip 30;
             limit_req zone=persec burst=80 nodelay;
             
             {{ if eq $autoRedirectDirection "0" }}
@@ -245,7 +245,7 @@ server {
         {{/* SSL handling server */}}
         server {
                 {{/* Security limits */}}
-                limit_conn perip 10;
+                limit_conn perip 30;
                 limit_req zone=persec burst=80 nodelay;
                 
                 server_name {{ $host }};
@@ -333,7 +333,7 @@ server {
                 server_name {{ $host }};
 
                 {{/* Security limits */}}
-                limit_conn perip 5;
+                limit_conn perip 30;
                 limit_req zone=persec burst=80 nodelay;
 
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
