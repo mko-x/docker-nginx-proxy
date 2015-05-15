@@ -216,7 +216,7 @@ Defines the possible highest number of file handles a worker can hold concurrent
 ## GLOB_ERROR_LOG_LEVEL
 ### Info
 Sets the loglevel for the **error** log output to print.
-Choose from: error, warn, info, debug
+Choose from: crit, error, warn, info, debug
 ### Default *error*'
 ---
 ## GLOB_KEEPALIVE_TIMEOUT
@@ -244,7 +244,18 @@ The version of docker-gen to use.
 The docker host this image is working with/to. You can run a docker container only for the proxies to manage another docker container running the applications.
 ### Default '*unix:///tmp/docker.sock*'
 ---
-    
+## GLOB_LIMIT_CONS_PER_IP
+### Info
+Define the maximum amount of connections per IP to allowed. If limit is exceeded, server will not respond to this IP for next 5 minutes. Protects the proxy from DOS via connection overflow.
+### Default 50
+---
+## GLOB_LIMIT_REQS_BURST
+### Info
+Define the peak amount of requests per connection allowed. If a client 
+ENV GLOB_LIMIT_REQS_BURST 80
+
+
+
 # Maximum Customization
 
     docker run -d --name "mgt-op" \
@@ -262,3 +273,34 @@ The docker host this image is working with/to. You can run a docker container on
         -e AUTO_REDIRECT_DIRECTION="1" \
         -v /etc/certs:/etc/nginx/certs \
         -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
+        
+# More
+Further information about several settings, reasons and the consequences.
+
+Just short explanations.
+
+## sendfile on
+It depends somehow on the use-case and the used kernel. But in general the sendfile implementation just 'pipes'(not exactly) information from one file descriptor(FD) to another within the kernel. So we have a decent direct disk I/O.
+
+By default sendfile is off. That causes the kernel to first read data from one FD, then writes it to the target FD.
+
+time of (*read()*  +  *write()*)  >  time of (*sendfile()*)
+
+## tcp_nodelay on
+The TCP stack has a mechanism implemented to avoid sending of too small packets. This mechanism will wait for a certain time to guarantee a packet is filled. The UNIX implementation is about 200ms. This mechanism is called [Nagle’s algorithm](http://en.wikipedia.org/wiki/Nagle's_algorithm). That was defined 1984.
+
+Today most of the data sent within a request/response exceeds the limit of one frame. But it's impossible to eactly fill it to the limit. So one can guess about 90% of traffic we have useless 200ms waiting for each packet.
+
+Activating this option will add the TCP_NODELAY option on the current connection's TCP stack.
+
+## tcp_nopush on
+As with tcp_nodelay will reduce waiting time, tcp_nopush tries to reduce the data size transmitted. As only FreeBSD is implementing TCP_NOPUSH in the TCP stack nginx will activate the TCP_CORK option on Linux. 
+
+Just like a real cork it blocks the outgoing packet until it reaches the critical mass to be worth transferring.
+
+The mechanism is pretty well documented in the Linux kernel [source code](http://lxr.free-electrons.com/source/net/ipv4/tcp_output.c?a=avr32#L1469).
+
+## sendfile + tcp_nodelay + tcp_nopush
+I leave to you now to combine the three effects and realize their benefits.
+
+If you don't get it, Frederic made a pretty good post([original (french)](https://t37.net/optimisations-nginx-bien-comprendre-sendfile-tcp-nodelay-et-tcp-nopush.html)/[english](https://t37.net/nginx-optimization-understanding-sendfile-tcp_nodelay-and-tcp_nopush.html) ) according to this topic. 

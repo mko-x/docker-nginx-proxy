@@ -4,6 +4,7 @@ proxy:
         file: dc-modules/proxy.yml
         service: proxy
 proxyssl:
+    build: .
     extends:
         file: dc-modules/proxyssl.yml
         service: proxyssl
