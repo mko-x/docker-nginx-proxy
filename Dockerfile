@@ -26,11 +26,11 @@ RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_
  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
 # Add content early as modified less often
-ADD ./conf/Procfile /app/
-ADD ./conf/mime.types /etc/nginx/
-ADD ./conf/nginx.conf /etc/nginx/
-ADD ./conf/prepare.sh /up/prepare.sh
-ADD ./conf/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
+ADD ./container-data/Procfile /app/
+ADD ./container-data/mime.types /etc/nginx/
+ADD ./container-data/nginx.conf /etc/nginx/
+ADD ./container-data/prepare.sh /up/prepare.sh
+ADD ./container-data/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
 
 # Choose the template to run, you may use dev for experimental use
 ENV GLOB_TMPL_MODE run
@@ -110,6 +110,12 @@ ENV GLOB_KEEPALIVE_TIMEOUT 60
 # Number of idle connections to upstream services to keep and don't waste time for TCP handshaking etc.
 ENV GLOB_UPSTREAM_IDLE_CONNECTIONS 0
 
+# Define the maximum amount of connections per IP to allowed
+ENV GLOB_LIMIT_CONS_PER_IP 50
+
+# Define the peak amount of requests per connection allowed.
+ENV GLOB_LIMIT_REQS_BURST 80
+
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
@@ -125,7 +131,7 @@ RUN echo "* 1 * * * /usr/local/sbin/rotate_nginx_log.sh" >> /etc/cron.d/nginx_lo
 WORKDIR /app/
 
 # Add late, as tmpl is most modified part and less content needs to be rebuilt
-ADD ./conf/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
+ADD ./container-data/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
 
 VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
 CMD ["forego", "start", "-r"]

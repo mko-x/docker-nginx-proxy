@@ -1,4 +1,4 @@
-# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $forceSSL := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $port := "none" }} {{ $upIdleConnections := "0" }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }} {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }} {{ $sslOcspValidTime := .Env.GLOB_SSL_OCSP_VALID_TIME }} {{ $sslOcspDnsAdresses := .Env.GLOB_SSL_OCSP_DNS_ADDRESSES }} {{ $sslOcspDnsTimeout := .Env.GLOB_SSL_OCSP_DNS_TIMEOUT }}
+# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $forceSSL := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $port := "none" }} {{ $upIdleConnections := "0" }} {{ $secLimitConsPerIp := .Env.GLOB_LIMIT_CONS_PER_IP }} {{ $secLimitReqsBurst := .Env.GLOB_LIMIT_REQS_BURST }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }} {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }} {{ $sslOcspValidTime := .Env.GLOB_SSL_OCSP_VALID_TIME }} {{ $sslOcspDnsAdresses := .Env.GLOB_SSL_OCSP_DNS_ADDRESSES }} {{ $sslOcspDnsTimeout := .Env.GLOB_SSL_OCSP_DNS_TIMEOUT }}
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
   default $http_x_forwarded_proto;
   ''      $scheme;
@@ -37,8 +37,8 @@ upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len 
     keepalive {{ $upIdleConnections }}; {{ end }} {{ end }}
 } {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
 server {
-    limit_conn perip 30;
-    limit_req zone=persec burst=80 nodelay; {{ if eq $autoRedirectDirection "0" }}    
+    limit_conn perip {{ $secLimitConsPerIp }};
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if eq $autoRedirectDirection "0" }}    
     server_name  {{ $prefix }}.{{ $host }};
     listen 443 ssl;
     rewrite ^(.*) https://{{ $host }}$1 permanent; {{ else }}
@@ -60,8 +60,8 @@ server {
     }
 } {{ end }}
 server {
-    limit_conn perip 30;
-    limit_req zone=persec burst=80 nodelay;
+    limit_conn perip {{ $secLimitConsPerIp }};
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
     server_name {{ $host }}; {{ if eq $spdyEnabled "1" }}
     listen 443 ssl spdy; {{ else }}
     listen 443 ssl; {{ end }}
@@ -94,8 +94,8 @@ server { {{ if eq $autoRedirectDirection "0" }}
     rewrite ^(.*) http://{{ $prefix }}.{{ $host }}$1 permanent; {{ end }}
 } {{ end }}
 server {
-    limit_conn perip 30;
-    limit_req zone=persec burst=80 nodelay;
+    limit_conn perip {{ $secLimitConsPerIp }};
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
     server_name {{ $host }}; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location / {

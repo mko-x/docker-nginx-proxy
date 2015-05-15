@@ -12,6 +12,8 @@
 {{ $upIdleConnections := "0" }}
 
 {{/* Global env var assignments */}}
+{{ $secLimitConsPerIp := .Env.GLOB_LIMIT_CONS_PER_IP }}
+{{ $secLimitReqsBurst := .Env.GLOB_LIMIT_REQS_BURST }}
 {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }}
 {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }}
 {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }}
@@ -195,8 +197,8 @@ server {
         server {
             
             {{/* Security limits */}}
-            limit_conn perip 30;
-            limit_req zone=persec burst=80 nodelay;
+            limit_conn perip {{ $secLimitConsPerIp }};
+            limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
             
             {{ if eq $autoRedirectDirection "0" }}
             {{/* Redirect prefixed host to plain host via moved permanently */}}
@@ -245,8 +247,8 @@ server {
         {{/* SSL handling server */}}
         server {
                 {{/* Security limits */}}
-                limit_conn perip 30;
-                limit_req zone=persec burst=80 nodelay;
+                limit_conn perip {{ $secLimitConsPerIp }};
+                limit_req zone=persec burst={{$secLimitReqsBurst}} nodelay;
                 
                 server_name {{ $host }};
     
@@ -333,8 +335,8 @@ server {
                 server_name {{ $host }};
 
                 {{/* Security limits */}}
-                limit_conn perip 30;
-                limit_req zone=persec burst=80 nodelay;
+                limit_conn perip {{ $secLimitConsPerIp }};
+                limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
 
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
