@@ -221,7 +221,7 @@ Defines the possible highest number of file handles a worker can hold concurrent
 ### Info
 Sets the loglevel for the **error** log output to print.
 Choose from: crit, error, warn, info, debug
-### Default *error*'
+### Default *error*
 ---
 ## GLOB_KEEPALIVE_TIMEOUT
 ### Info
@@ -261,7 +261,7 @@ ENV GLOB_LIMIT_REQS_BURST 80
 
 
 
-# Maximum Customization
+# Big Customization
 
     docker run -d --name "mgt-op" \
         -p 80:80 -p 443:443 \
