@@ -111,7 +111,7 @@ Enables the multi staging proxy caching to increase performance and reduce laten
 ## GLOB_SSL_CERT_BUNDLE_INFIX
 ### Info
 Set the insertion string inserted between cert file's name and cert file extension.Ignored if *GLOB_SSL_CERT_BUNDLE_ENABLED* is *false*
-### Default: "" ( <empty>)
+### Default: "" ( empty)
 ---
 ## GLOB_SSL_SESSION_TIMEOUT
 ### Info
