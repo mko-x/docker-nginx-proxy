@@ -25,7 +25,7 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
 
 server {
-        listen 80 default_server;
+        listen 80;
         server_name _;
         return {{ $unavailableService }};
 } {{ range $hostAndPort, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }} {{ $hostAndPortArray := split $hostAndPort ":" }} {{ $host := first $hostAndPortArray }} {{ $path := replace $hostAndPort $host "" 1 }} {{ $hostAndPortLen := len $hostAndPortArray }} {{ if gt $hostAndPortLen 1 }} {{ $port := last $hostAndPortArray }} {{ $port := first ( split $port "/" ) }} {{ $path := replace $path $port "" 1 }} {{ $path := replace $path ":" "" 1 }} {{ end }}
@@ -95,8 +95,10 @@ server { {{ if eq $autoRedirectDirection "0" }}
 } {{ end }}
 server {
     limit_conn perip {{ $secLimitConsPerIp }};
-    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
-    server_name {{ $host }}; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if (and ($.Env.DEFAULT_HOST) (eq $.Env.DEFAULT_HOST $host) ) }}
+    listen 80 default_server;
+    server_name {{ $host }}; {{ else }}
+    server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location / {
             proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}

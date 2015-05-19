@@ -94,7 +94,7 @@ The image offers a bunch of environment variables allowing you easy **customizat
 ## GLOB_USER_NAME
 ### Info
 The user which will run the proxy server.
-### Default 'nginx'
+### Default:'nginx'
 ---
 ## GLOB_MAX_BODY_SIZE
 ### Info
@@ -106,7 +106,7 @@ See [nginx docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_
 ## GLOB_CACHE_ENABLE
 ### Info
 Enables the multi staging proxy caching to increase performance and reduce latency. Active by default.
-### Default *1*
+### Default: *1*
 ---
 ## GLOB_SSL_CERT_BUNDLE_INFIX
 ### Info
@@ -148,10 +148,16 @@ Timeout for name resolution. Unused if GLOB_SSL_OCSP_VALID_TIME = 0.
 See [nginx resolver docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
 ### Default: 10s
 ---
+## GLOB_DEFAULT_HOST
+### Info
+To set the default host for nginx use the env var `GLOB_DEFAULT_HOST=foo.bar.com`. 
+### Default: $host (current target host)
+
+---
 ## GLOB_HTTPS_FORCE
 ### Info
 Redirect calls via http to https.
-### Default 1
+### Default: 1
 ---
 ## GLOB_SPDY_ENABLED
 ### Info
@@ -194,65 +200,65 @@ To control source and destination of auto redirect. Ignored if GLOB_AUTO_REDIREC
 ## GLOB_ALLOW_HTTP_FALLBACK
 ###Info
 As HTTPS/SSL is enabled by default, this flag allows acces via HTTP as well.
-### Default 0
+### Default: 0
 ---
 ## GLOB_WORKER_COUNT
 ### Info
 Set the maximum amount of concurrent worker processes of the server. 
-### Default auto
+### Default: auto
 Defaults to auto -> usually count of available CPU cores.
 ---
 ## GLOB_WORKER_CONNECTIONS
 ### Info
 Specifies the total count of concurrent simultaneous connection for each worker.
-### Default *256*
+### Default: *256*
 ---
 ## GLOB_WORKER_MULTI_ACCEPT
 ### Info
 Allows the workers to handle multiple connections at once. Set to '*off*' if you want the worker to always handle only one connection at a time.
-### Default on
+### Default: on
 ---
 ## GLOB_WORKER_RLIMIT_NOFILE
 ### Info
 Defines the possible highest number of file handles a worker can hold concurrently.
-### Default *1024*
+### Default: *1024*
 ---
 ## GLOB_ERROR_LOG_LEVEL
 ### Info
 Sets the loglevel for the **error** log output to print.
 Choose from: crit, error, warn, info, debug
-### Default *error*
+### Default: *error*
 ---
 ## GLOB_KEEPALIVE_TIMEOUT
 ### Info
 The time a worker will hold a connection to a client without a request in seconds.
-### Default 60
+### Default: 60
 ---
 ## GLOB_UPSTREAM_IDLE_CONNECTIONS
 ### Info
 The number of connections to the upstream backend services that will be kept idle at maximum from nginx. It's turned off by default but with setting a value like 20 - there are always some idle connections available. This reduces the amount of HTTP/TCP connections that need to be created from scratch. This avoids the so called [HTTP Heavy Lifting](http://nginx.com/blog/http-keepalives-and-web-performance/)
 
-### Default 0
+### Default: 0
 ---
 ## GLOB_TMPL_MODE
 ### Info
 By default the nginx configuration file is generated from *run*-template. For development issues you can set this variable to '*dev*' to have a more readable template to work on. Logical both the *run* and the *dev* template are doing the same.
-### Default *run*
+### Default: *run*
 ---
 ## DOCKER_GEN_VERSION
 ### Info
 The version of docker-gen to use.
-### Default *0.3.9*
+### Default: *0.3.9*
 ---
 ## DOCKER_HOST
 ### Info
 The docker host this image is working with/to. You can run a docker container only for the proxies to manage another docker container running the applications.
-### Default '*unix:///tmp/docker.sock*'
+### Default: '*unix:///tmp/docker.sock*'
 ---
 ## GLOB_LIMIT_CONS_PER_IP
 ### Info
 Define the maximum amount of connections per IP to allowed. If limit is exceeded, server will not respond to this IP for next 5 minutes. Protects the proxy from DOS via connection overflow.
-### Default 50
+### Default: 50
 ---
 ## GLOB_LIMIT_REQS_BURST
 ### Info
