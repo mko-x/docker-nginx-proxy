@@ -178,14 +178,18 @@ use-cases:
 - domain.org -> *www*.domain.org
 - *api*.domain.org -> domain.org
 - domain.org -> *cdn*.domain.org
+
 ### Default: www
+
 ---
 ## GLOB_AUTO_REDIRECT_DIRECTION
 ### Info
 To control source and destination of auto redirect. Ignored if GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED is not enabled.
 - 0: redirect from prefix to non-prefix
 - 1: redirect from non-prefix to prefix
+
 ### Default: 0
+
 ---
 ## GLOB_ALLOW_HTTP_FALLBACK
 ###Info
@@ -227,6 +231,7 @@ The time a worker will hold a connection to a client without a request in second
 ## GLOB_UPSTREAM_IDLE_CONNECTIONS
 ### Info
 The number of connections to the upstream backend services that will be kept idle at maximum from nginx. It's turned off by default but with setting a value like 20 - there are always some idle connections available. This reduces the amount of HTTP/TCP connections that need to be created from scratch. This avoids the so called [HTTP Heavy Lifting](http://nginx.com/blog/http-keepalives-and-web-performance/)
+
 ### Default 0
 ---
 ## GLOB_TMPL_MODE
