@@ -6,8 +6,8 @@
 
 # **NGINX** DD RPS
 
-DD -> Dynamic Docker
-RPS -> Reverse Proxy Server
+- DD -> Dynamic Docker
+- RPS -> Reverse Proxy Server
 
 ![nginx 1.9.0](https://img.shields.io/badge/nginx-1.9.0-brightgreen.svg?style=flat-square)
 ![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
@@ -92,6 +92,7 @@ Further I added connection/IP based simple handling of request amount peaks.
 
 If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and nginx will serve static files instead. That could provide a performance increase possibly - although not in any case.
 
+It is possible, to serve sensitive files from one provider (e.g. private-cloud) and use another provider (e.g. public-cloud) for non-sensitive files - to create a hybrid cloud. Pretty easy an simple from one logical nginx-
 
 e.g. owncloud with fastcgi -> [fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;](https://doc.owncloud.org/server/5.0/admin_manual/configuration/xsendfile.html)
 
