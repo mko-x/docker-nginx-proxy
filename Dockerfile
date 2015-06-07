@@ -48,7 +48,7 @@ ENV GLOB_SSL_SESSION_TIMEOUT 5m
 # Set default shared session cache
 ENV GLOB_SSL_SESSION_CACHE 50m
 
-# Enable Online Certificate Status Protocol (OCSP) through setting this value to any > 0.
+# Enable OCSP through setting this value to any > 0.
 # See http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_stapling
 ENV GLOB_SSL_OCSP_VALID_TIME "0"
 
@@ -58,6 +58,9 @@ ENV GLOB_SSL_OCSP_DNS_ADDRESSES "5.9.49.12 8.8.8.8"
 
 # Timeout when verifying certificates. Unused if GLOB_SSL_OCSP_VALID_TIME <= 0
 ENV GLOB_SSL_OCSP_DNS_TIMEOUT "10s"
+
+# Only allow ssl
+ENV GLOB_SSL_FORCE "1"
 
 # Control SPDY support
 # More info https://www.mare-system.de/guide-to-nginx-ssl-spdy-hsts/
@@ -76,12 +79,6 @@ ENV GLOB_AUTO_REDIRECT_PREFIX www
 # - 0: redirect from prefix to non-prefix (e.g. 'http://WWW.xyz.io' to 'http://xyz.io')
 # - 1: redirect from non-prefix to prefix (e.g. 'http://xyz.io' to 'http://API.xyz.io')
 ENV GLOB_AUTO_REDIRECT_DIRECTION "0"
-
-# Only allow ssl
-ENV GLOB_HTTPS_FORCE "1"
-
-# Optional allows non-ssl
-ENV GLOB_ALLOW_HTTP_FALLBACK "0"
 
 # User to run the proxy
 ENV GLOB_USER_NAME nginx

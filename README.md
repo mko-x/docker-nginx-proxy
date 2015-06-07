@@ -172,6 +172,25 @@ Default: **">"**
         -e VIRTUAL_STATIC_FILE_CONFIG="/images:/var/local/static/images" \
         ... target/image
 
+### VIRTUAL_SSL_FORCE
+
+#### Info
+
+Change global https enforcing policy for a single container.
+
+Default: value of [GLOB_SSL_FORCE](## GLOB_SSL_FORCE) - which defaults to "1"
+
+#### Pattern
+
+    VIRTUAL_SSL_FORCE="<# vals "0" or "1" #>"
+
+#### Example
+
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_SSL_FORCE="0" \
+        ... target/image
+
 ## More understanding
 
 Last but not least I tried to improve **readability** and documentation for easier understanding of the image's working principles. From my point of view. Therefore this repo contains an additional [nginx-dev template](https://github.com/mko-x/docker-nginx-proxy/blob/master/container-data/nginx-dev.tmpl) with a lot of documentation. That's just for my reference, you may have a look and try it yourself.
@@ -240,16 +259,16 @@ Timeout for name resolution. Unused if GLOB_SSL_OCSP_VALID_TIME = 0.
 See [nginx resolver docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
 ### Default: 10s
 ---
+## GLOB_SSL_FORCE
+### Info
+Redirect calls via http to https.
+### Default: 1
+---
 ## GLOB_DEFAULT_HOST
 ### Info
 To set the default host for nginx use the env var `GLOB_DEFAULT_HOST=foo.bar.com`. 
 ### Default: $host (current target host)
 
----
-## GLOB_HTTPS_FORCE
-### Info
-Redirect calls via http to https.
-### Default: 1
 ---
 ## GLOB_SPDY_ENABLED
 ### Info
