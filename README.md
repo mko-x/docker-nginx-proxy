@@ -425,4 +425,9 @@ The mechanism is pretty well documented in the Linux kernel [source code](http:/
 ## sendfile + tcp_nodelay + tcp_nopush
 I leave to you now to combine the three effects and realize their benefits.
 
-If you don't get it, Frederic made a pretty good post([original (french)](https://t37.net/optimisations-nginx-bien-comprendre-sendfile-tcp-nodelay-et-tcp-nopush.html)/[english](https://t37.net/nginx-optimization-understanding-sendfile-tcp_nodelay-and-tcp_nopush.html) ) according to this topic. 
+If you don't get it, Frederic made a pretty good post([original (french)](https://t37.net/optimisations-nginx-bien-comprendre-sendfile-tcp-nodelay-et-tcp-nopush.html)/[english](https://t37.net/nginx-optimization-understanding-sendfile-tcp_nodelay-and-tcp_nopush.html) ) according to this topic. #### Diffie-Hellman Groups
+#### Diffie-Hellman Groups
+
+If you have Diffie-Hellman groups enabled, the files should be named after the virtual host with a
+`dhparam` suffix and `.pem` extension. For example, a container with `VIRTUAL_HOST=foo.bar.com`
+should have a `foo.bar.com.dhparam.pem` file in the certs directory.

@@ -312,6 +312,11 @@ server {
                 ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
                 ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }};
 
+                {{/* Support dhparam if found */}}
+                {{ if (exists (printf "/etc/nginx/certs/%s.dhparam.pem" $cert)) }}
+                    ssl_dhparam {{ printf "/etc/nginx/certs/%s.dhparam.pem" $cert }};
+                {{ end }}
+
                 {{/* Additional headers */}}
                 {{ if eq $spdyEnabled "1" }}
                     {{/* SPDY effect 2 */}}
