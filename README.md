@@ -16,7 +16,7 @@
 
 # Quickstart
 
-    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
+    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy
 
 # About
 
@@ -408,7 +408,7 @@ ENV GLOB_LIMIT_REQS_BURST 80
         -e GLOB_AUTO_REDIRECT_PREFIX="subservice" \
         -e AUTO_REDIRECT_DIRECTION="1" \
         -v /etc/certs:/etc/nginx/certs \
-        -v /var/run/docker.sock:/tmp/docker.sock mkodockx/docker-nginx-proxy
+        -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy
         
 # Details
 Further information about several settings, reasons and the consequences.
