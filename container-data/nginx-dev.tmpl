@@ -235,10 +235,9 @@ server {
                 listen 80;
                 
                 {{/* Handle static file serving if requested by container */}}
-                {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
 
                     {{/* Allow custom seperators due to regex */}}
-                    {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
                 
                     {{/* The location URI/regex to look for */}}
@@ -319,10 +318,10 @@ server {
                 {{ end }}
 
                 {{/* Handle static file serving if requested by container */}}
-                {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
 
                     {{/* Allow custom seperators due to regex */}}
-                    {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
+                    {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
             
                     {{/* The location URI/regex to look for */}}
@@ -395,10 +394,10 @@ server {
                 {{ end }}
 
                 {{/* Handle static file serving if requested by container */}}
-                {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
 
                     {{/* Allow custom seperators due to regex */}}
-                    {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
+                    {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
             
                     {{/* The location URI/regex to look for */}}

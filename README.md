@@ -86,9 +86,12 @@ Further I added connection/IP based simple handling of request amount peaks.
 
 ## More container env vars
 
-### STATIC_FILE_CONFIG
+### VIRTUAL_STATIC_FILE_CONFIG
 
-If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and nginx will serve static files instead. That would provide an performance increase of course - although not in any case.
+#### Info
+
+If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and nginx will serve static files instead. That could provide a performance increase possibly - although not in any case.
+
 
 e.g. owncloud with fastcgi -> [fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;](https://doc.owncloud.org/server/5.0/admin_manual/configuration/xsendfile.html)
 
@@ -109,13 +112,16 @@ Definition of the path or URL to serve the static files from. Depending on which
 ##### Kind (optional)
 
 - root (*default*)
-Sets the base path of files requested. e.g. "/var/www/static"
+
+  Sets the base path of files requested. e.g. "/var/www/static"
 
 - alias
-Link to an absolute path on host. e.g. "/var/www/static/files_path"
+
+  Link to an absolute path on host. e.g. "/var/www/static/files_path"
 
 - proxy_pass
-Link to a content deliverer like amazonaws or CDN. e.g. "http://cdn.com"
+
+  Link to a content deliverer like amazonaws or CDN. e.g. "http://cdn.com"
 
 See [synopsis](http://wiki.nginx.org/X-accel)
 
@@ -123,29 +129,31 @@ See [synopsis](http://wiki.nginx.org/X-accel)
 
 ##### Simple
 
-    STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #>
+    VIRTUAL_STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #>
 
 ##### Custom kind
 
-    STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #><# seperator #><# kind #>
+    VIRTUAL_STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #><# seperator #><# kind #>
 
 #### Example
 
 ##### Default kind (root)
 
-    docker run -v /var/local/static/images:/var/www/images \\
-        -e VIRTUALHOST=example.org \\
-        -e STATIC_FILE_CONFIG="/images>/var/local/static/images" \\
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_STATIC_FILE_CONFIG="/images>/var/local/static/images" \
         ... target/image
 
 ##### Custom kind
 
-    docker run -v /var/local/static/images:/var/www/images \\
-        -e VIRTUALHOST=example.org \\
-        -e STATIC_FILE_CONFIG="/images>/var/local/static/images>alias" \\
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_STATIC_FILE_CONFIG="/images>/var/local/static/images>alias" \
         ... target/image
 
-### STATIC_CONFIG_ITEM_SEPERATOR
+### VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR
+
+#### Info
 
 Depending on which kind of URI/regex you want to use, you may want to change the seperator.
 
@@ -153,14 +161,14 @@ Default: **">"**
 
 #### Pattern
 
-    STATIC_CONFIG_ITEM_SEPERATOR="<# seperator-string #>"
+    VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR="<# seperator-string #>"
 
 #### Example
 
-    docker run -v /var/local/static/images:/var/www/images \\
-        -e VIRTUALHOST=example.org \\
-        -e STATIC_CONFIG_ITEM_SEPERATOR=":"
-        -e STATIC_FILE_CONFIG="/images:/var/local/static/images" \\
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR=":" \
+        -e VIRTUAL_STATIC_FILE_CONFIG="/images:/var/local/static/images" \
         ... target/image
 
 ## More understanding
