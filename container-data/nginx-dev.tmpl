@@ -246,19 +246,26 @@ server {
                     {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
                 
-                    {{/* The location URI/regex to look for */}}
-                    {{ $uri := $uriAndTargetArray[0] }}
-                    {{/* The target path/URL to redirect to */}}
-                    {{ $target := $uriAndTargetArray[1] }}
-                    {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
 
-                    {{/* Add the internal location */}}
-                    location {{ $uri }} {
-                        internal;
-                        {{ $kind }}: {{ $target }};
-                    }
-            
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
                 {{ end }}
                 
                 location / {
@@ -339,19 +346,26 @@ server {
                     {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
             
-                    {{/* The location URI/regex to look for */}}
-                    {{ $uri := $uriAndTargetArray[0] }}
-                    {{/* The target path/URL to redirect to */}}
-                    {{ $target := $uriAndTargetArray[1] }}
-                    {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
 
-                    {{/* Add the internal location */}}
-                    location {{ $uri }} {
-                        internal;
-                        {{ $kind }}: {{ $target }};
-                    }
-        
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
                 {{ end }}
 
                 location / {
@@ -421,19 +435,26 @@ server {
                     {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
                     {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
             
-                    {{/* The location URI/regex to look for */}}
-                    {{ $uri := $uriAndTargetArray[0] }}
-                    {{/* The target path/URL to redirect to */}}
-                    {{ $target := $uriAndTargetArray[1] }}
-                    {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
 
-                    {{/* Add the internal location */}}
-                    location {{ $uri }} {
-                        internal;
-                        {{ $kind }}: {{ $target }};
-                    }
-        
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
                 {{ end }}
 
                 location / {
