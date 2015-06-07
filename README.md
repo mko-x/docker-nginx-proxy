@@ -65,6 +65,8 @@ See also readme data at Jason's [github repo](https://github.com/jwilder/nginx-p
 
 # Modifications
 
+## More global env vars
+
 To make Jason's nginx-proxy more *configurable* for me without having to provide custom configs/includes, I added some **environment variables**. (I'm sorry Jason, I know you try to minimize amount of environment variables)
 
 All of them change the global behavior of nginx. (starting with "*GLOB_*")
@@ -82,7 +84,47 @@ Optional: Easy using of optimisation features of **nginx** as they are provided 
 
 Further I added connection/IP based simple handling of request amount peaks.
 
-Last but not least I tried to improve **readability** and documentation for easier understanding of the image's working principles. Therefore this repo contains an additional nginx-dev template with a lot of documentation.
+## More container env vars
+
+### STATIC_FILE_CONFIG
+
+If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and nginx will serve static files instead. That would provide an performance increase of course - although not in any case.
+
+e.g. owncloud with fastcgi -> [fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;](https://doc.owncloud.org/server/5.0/admin_manual/configuration/xsendfile.html)
+
+#### How to
+
+**STATIC_FILE_CONFIG** requires two arguments and accepts up to 3:
+
+##### URI
+Trigger for the static file handling. Definition by a prefix string or by a regular expression - [docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#location)
+e.g. "/" or "^~ /images/"
+
+##### Target
+Definition of the path or URL to serve the static files from. Depending on which kind to use, value can vary.
+
+##### Kind (optional)
+
+- root (default)
+Sets the root path of files requested. e.g. "/var/www/static"
+
+- alias
+Link to an absolute path on host. e.g. "/var/www/static/files_path"
+
+- proxy_pass
+Link to a content deliverer like amazonaws or CDN. e.g. "http://cdn.com"
+
+See [synopsis](http://wiki.nginx.org/X-accel)
+
+### STATIC_CONFIG_ITEM_SEPERATOR
+
+Depending on which kind of URI/regex you want to use, you may want to change the seperator.
+
+Default: **">"**
+
+## More understanding
+
+Last but not least I tried to improve **readability** and documentation for easier understanding of the image's working principles. From my point of view. Therefore this repo contains an additional [nginx-dev template](https://github.com/mko-x/docker-nginx-proxy/blob/master/container-data/nginx-dev.tmpl) with a lot of documentation. That's just for my reference, you may have a look and try it yourself.
 
 ---
 
