@@ -20,19 +20,14 @@
 
 # About
 
-A **nginx** based reverse-proxy with dynamic server configuration at runtime. Automatically generating **nginx** configuration data triggered by Docker events.
+A **nginx** based reverse-proxy with dynamic server configuration at runtime. Automatically generating configuration data triggered by Docker events.
 
 Easily customizable for specific use cases. Multilevel stacking of instances is possible to provide scalability support. 
 
 You can create and scale the backend via (beta) Docker mechanisms: 
-Use the [docker-compose **scale**](https://docs.docker.com/compose/cli/#scale) option or operate with [docker swarm](https://docs.docker.com/swarm/#nodes-setup) to ensure *high-availability*.
+Use the [docker-compose **scale**](https://docs.docker.com/compose/cli/#scale) option or operate with [docker swarm](https://docs.docker.com/swarm/#nodes-setup).
 
-You can use nginx balancing capabilities as well with different balancing methods, persistence variants, weighting and more. See [nginx load_balancing docs](http://nginx.org/en/docs/http/load_balancing.html) for details.
-
-My main **focus** on:
-
-- Performance
-- Security
+It provides/uses nginx limiting capabilities with different detection methods by default (connections per ip, burst requests/s).
 
 ---
 
