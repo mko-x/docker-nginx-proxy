@@ -131,5 +131,5 @@ WORKDIR /app/
 # Add late, as tmpl is most modified part and less content needs to be rebuilt
 ADD ./container-data/nginx-${GLOB_TMPL_MODE}.tmpl ./nginx.tmpl
 
-VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/"]
+VOLUME ["/etc/nginx/certs","/etc/nginx/htpasswd","/etc/nginx/vhost.d/","/etc/nginx/conf.d/","/var/log/nginx"]
 CMD ["forego", "start", "-r"]
