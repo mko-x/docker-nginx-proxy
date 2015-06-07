@@ -276,12 +276,12 @@ server {
 
         {{/* SSL handling server */}}
         server {
+                server_name {{ $host }};
+
                 {{/* Security limits */}}
                 limit_conn perip {{ $secLimitConsPerIp }};
                 limit_req zone=persec burst={{$secLimitReqsBurst}} nodelay;
-                
-                server_name {{ $host }};
-    
+
                 {{/* SPDY effect 1 */}}
                 {{ if eq $spdyEnabled "1" }}
                     listen 443 ssl spdy;
