@@ -11,6 +11,7 @@ RUN apt-get update -y -qq \
     wget \
     cron \
  && apt-get clean -y -qq \
+ && apt-get autoremove -y -qq \
  && rm -r /var/lib/apt/lists/*
  
 # Install Forego
