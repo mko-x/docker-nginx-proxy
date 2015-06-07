@@ -92,6 +92,9 @@ If you have a volume mounted from docker host to container, you can enable **X-A
 
 e.g. owncloud with fastcgi -> [fastcgi_param MOD_X_ACCEL_REDIRECT_ENABLED on;](https://doc.owncloud.org/server/5.0/admin_manual/configuration/xsendfile.html)
 
+**Besides**:
+*This allows you to use one static file provider for several container in your desired configuration. So you may use a CDN for images, EC2 instance for '.php' and more.*
+
 #### How to
 
 **STATIC_FILE_CONFIG** requires two arguments and accepts up to 3:
@@ -105,8 +108,8 @@ Definition of the path or URL to serve the static files from. Depending on which
 
 ##### Kind (optional)
 
-- root (default)
-Sets the root path of files requested. e.g. "/var/www/static"
+- root (*default*)
+Sets the base path of files requested. e.g. "/var/www/static"
 
 - alias
 Link to an absolute path on host. e.g. "/var/www/static/files_path"
@@ -116,11 +119,49 @@ Link to a content deliverer like amazonaws or CDN. e.g. "http://cdn.com"
 
 See [synopsis](http://wiki.nginx.org/X-accel)
 
+#### Pattern
+
+##### Simple
+
+    STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #>
+
+##### Custom kind
+
+    STATIC_FILE_CONFIG="<# uri #><# seperator #><# target #><# seperator #><# kind #>
+
+#### Example
+
+##### Default kind (root)
+
+    docker run -v /var/local/static/images:/var/www/images \\
+        -e VIRTUALHOST=example.org \\
+        -e STATIC_FILE_CONFIG="/images>/var/local/static/images" \\
+        ... target/image
+
+##### Custom kind
+
+    docker run -v /var/local/static/images:/var/www/images \\
+        -e VIRTUALHOST=example.org \\
+        -e STATIC_FILE_CONFIG="/images>/var/local/static/images>alias" \\
+        ... target/image
+
 ### STATIC_CONFIG_ITEM_SEPERATOR
 
 Depending on which kind of URI/regex you want to use, you may want to change the seperator.
 
 Default: **">"**
+
+#### Pattern
+
+    STATIC_CONFIG_ITEM_SEPERATOR="<# seperator-string #>"
+
+#### Example
+
+    docker run -v /var/local/static/images:/var/www/images \\
+        -e VIRTUALHOST=example.org \\
+        -e STATIC_CONFIG_ITEM_SEPERATOR=":"
+        -e STATIC_FILE_CONFIG="/images:/var/local/static/images" \\
+        ... target/image
 
 ## More understanding
 

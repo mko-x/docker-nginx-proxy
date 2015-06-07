@@ -52,7 +52,7 @@ server {
 } {{ end }} {{ if eq $allowHttp "1" }}
 server {
     server_name {{ $host }};
-    listen 80; {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+    listen 80; {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};
@@ -84,7 +84,7 @@ server {
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
     add_header X-Frame-Options SAMEORIGIN;
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};
@@ -107,7 +107,7 @@ server {
     listen 80 default_server;
     server_name {{ $host }}; {{ else }}
     server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};

@@ -246,7 +246,7 @@ server {
                     {{/* The target path/URL to redirect to */}}
                     {{ $target := $uriAndTargetArray[1] }}
                     {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
 
                     {{/* Add the internal location */}}
                     location {{ $uri }} {
@@ -330,7 +330,7 @@ server {
                     {{/* The target path/URL to redirect to */}}
                     {{ $target := $uriAndTargetArray[1] }}
                     {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
 
                     {{/* Add the internal location */}}
                     location {{ $uri }} {
@@ -406,7 +406,7 @@ server {
                     {{/* The target path/URL to redirect to */}}
                     {{ $target := $uriAndTargetArray[1] }}
                     {{/* The kind of link (default) alias, root or proxy_pass */}}
-                    {{ $kind := or ( $uriAndTargetArray[2] "alias" ) }}
+                    {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
 
                     {{/* Add the internal location */}}
                     location {{ $uri }} {
