@@ -45,7 +45,7 @@ server {
     server_name {{ $host }};
     listen 443 ssl;
     rewrite ^(.*) https://{{ $prefix }}.{{ $host }}$1 permanent; {{ end }}
-} {{ end }} {{ if eq $sslForce "1") }}
+} {{ end }} {{ if eq $sslForce "1" }}
 server {
     server_name {{ $host }};
     rewrite ^(.*) https://{{ $host }}$1 permanent;
