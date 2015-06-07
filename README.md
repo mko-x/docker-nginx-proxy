@@ -27,7 +27,7 @@ Easily customizable for specific use cases. Multilevel stacking of instances is 
 You can create and scale the backend via (beta) Docker mechanisms: 
 Use the [docker-compose **scale**](https://docs.docker.com/compose/cli/#scale) option or operate with [docker swarm](https://docs.docker.com/swarm/#nodes-setup).
 
-It provides/uses nginx limiting capabilities with different detection methods by default (connections per ip, burst requests/s).
+It provides/uses [nginx](http://nginx.org/ru/) limiting capabilities with different detection methods by default (connections per ip, burst requests/s).
 
 ---
 
@@ -41,12 +41,11 @@ This fork is some kind of refactoring and extension of Jason's primarily work. S
 
 ## Thanks
 
-However:
 **Many thanks to Jason for his great work!**
 
 ## More
 
-See also readme data at Jason's [github repo](https://github.com/jwilder/nginx-proxy) for more information about [docker-gen](https://github.com/jwilder/docker-gen), [templates](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/) and more.
+See also readme at Jason's [github repo](https://github.com/jwilder/nginx-proxy) for more information about [docker-gen](https://github.com/jwilder/docker-gen), [templates](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/).
 
 Topics covered there among others:
 
@@ -57,9 +56,9 @@ Topics covered there among others:
 - SSL Config
 - Basic Auth
 
-- Custom global or per vhost nginx configuration
+- Custom global or per vhost [nginx](http://nginx.org/ru/) configuration
 
-You find a copy of Jason's readme at the end of this one. It's just to easy provide the version of his readme according to my fork.
+You find a copy of Jason's readme at the end of this one. It's just to easyily provide the version of his readme according to my fork.
 
 ---
 
@@ -92,11 +91,13 @@ For example:
 - SSL: Bundled Certs / CA chains
 - SSL: OCSP
 - automatic redirects
-- nginx worker config
+- [nginx](http://nginx.org/ru/) worker config
 
-Optional: Easy using of optimisation features of **nginx** as they are provided in general but must be activated via environment variables.
+Optional: Easy using of optimisation features of [nginx](http://nginx.org/ru/) as they are provided in general but must be activated via environment variables.
 
 Further I added connection/IP based simple handling of request amount peaks.
+
+See details [below](# Global Environment Variables)
 
 ## More container env vars
 
@@ -104,7 +105,7 @@ Further I added connection/IP based simple handling of request amount peaks.
 
 #### Info
 
-If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and nginx will serve static files instead. That could provide a performance increase possibly - although not in any case.
+If you have a volume mounted from docker host to container, you can enable **X-Accel** headers to be handled by nginx. So if you have a webserver (e.g. [httpd/Apache](http://httpd.apache.org/) or another [nginx](http://nginx.org/)) within the container image, it could be skipped and [nginx](http://nginx.org/ru/) will serve static files instead. That could provide a performance increase possibly - although not in any case.
 
 It is possible, to serve sensitive files from one provider (e.g. private-cloud) and use another provider (e.g. public-cloud) for non-sensitive files - to create a hybrid cloud. Pretty easy an simple from one logical nginx-
 
@@ -211,7 +212,7 @@ Last but not least I tried to improve **readability** and documentation for easi
 
 ---
 
-# Environment Variables
+# Global Environment Variables
 
 The image offers a bunch of environment variables allowing you easy **customization** and **optimization** even for more complex features.
 
@@ -223,7 +224,7 @@ The user which will run the proxy server.
 ---
 ## GLOB_MAX_BODY_SIZE
 ### Info
-Set the nginx maximum body size.
+Set the [nginx](http://nginx.org/ru/) maximum body size.
 ### Link 
 See [nginx docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 ### Default: 10m
@@ -280,7 +281,7 @@ Redirect calls via http to https.
 ---
 ## GLOB_DEFAULT_HOST
 ### Info
-To set the default host for nginx use the env var `GLOB_DEFAULT_HOST=foo.bar.com`. 
+To set the default host for [nginx](http://nginx.org/ru/) use the env var `GLOB_DEFAULT_HOST=foo.bar.com`. 
 ### Default: $host (current target host)
 
 ---
@@ -367,7 +368,7 @@ The number of connections to the upstream backend services that will be kept idl
 ---
 ## GLOB_TMPL_MODE
 ### Info
-By default the nginx configuration file is generated from *run*-template. For development issues you can set this variable to '*dev*' to have a more readable template to work on. Logical both the *run* and the *dev* template are doing the same.
+By default the [nginx](http://nginx.org/ru/) configuration file is generated from *run*-template. For development issues you can set this variable to '*dev*' to have a more readable template to work on. Logical both the *run* and the *dev* template are doing the same.
 ### Default: *run*
 ---
 ## DOCKER_GEN_VERSION
@@ -429,7 +430,7 @@ Today most of the data sent within a request/response exceeds the limit of one f
 Activating this option will add the TCP_NODELAY option on the current connection's TCP stack.
 
 ## tcp_nopush on
-As with tcp_nodelay will reduce waiting time, tcp_nopush tries to reduce the data size transmitted. As only FreeBSD is implementing TCP_NOPUSH in the TCP stack nginx will activate the TCP_CORK option on Linux. 
+As with tcp_nodelay will reduce waiting time, tcp_nopush tries to reduce the data size transmitted. As only FreeBSD is implementing TCP_NOPUSH in the TCP stack [nginx](http://nginx.org/ru/) will activate the TCP_CORK option on Linux. 
 
 Just like a real cork it blocks the outgoing packet until it reaches the critical mass to be worth transferring.
 
