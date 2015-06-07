@@ -1,4 +1,4 @@
-# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $forceSSL := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $port := "none" }} {{ $upIdleConnections := "0" }} {{ $secLimitConsPerIp := .Env.GLOB_LIMIT_CONS_PER_IP }} {{ $secLimitReqsBurst := .Env.GLOB_LIMIT_REQS_BURST }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $forceSSL := .Env.GLOB_HTTPS_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }} {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }} {{ $sslOcspValidTime := .Env.GLOB_SSL_OCSP_VALID_TIME }} {{ $sslOcspDnsAdresses := .Env.GLOB_SSL_OCSP_DNS_ADDRESSES }} {{ $sslOcspDnsTimeout := .Env.GLOB_SSL_OCSP_DNS_TIMEOUT }}
+# Generated nginx site conf {{ $infix := "" }} {{ $autoRedirectEnabled := "0" }} {{ $prefix := "" }} {{ $sslForce := "1" }} {{ $spdyEnabled := "0" }} {{ $allowHttp := "0" }} {{ $port := "none" }} {{ $upIdleConnections := "0" }} {{ $secLimitConsPerIp := .Env.GLOB_LIMIT_CONS_PER_IP }} {{ $secLimitReqsBurst := .Env.GLOB_LIMIT_REQS_BURST }} {{ $infix := .Env.GLOB_SSL_CERT_BUNDLE_INFIX }} {{ $autoRedirectEnabled := .Env.GLOB_AUTO_REDIRECT_ENABLED }} {{ $prefix := .Env.GLOB_AUTO_REDIRECT_PREFIX }} {{ $spdyEnabled := .Env.GLOB_SPDY_ENABLED }} {{ $unavailableService := .Env.GLOB_HTTP_NO_SERVICE }} {{ $autoRedirectDirection := .Env.GLOB_AUTO_REDIRECT_DIRECTION }} {{ $sslSessionTimeout := .Env.GLOB_SSL_SESSION_TIMEOUT }} {{ $sslSessionCache := .Env.GLOB_SSL_SESSION_CACHE }} {{ $sslForce := .Env.GLOB_SSL_FORCE }} {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }} {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }} {{ $sslOcspValidTime := .Env.GLOB_SSL_OCSP_VALID_TIME }} {{ $sslOcspDnsAdresses := .Env.GLOB_SSL_OCSP_DNS_ADDRESSES }} {{ $sslOcspDnsTimeout := .Env.GLOB_SSL_OCSP_DNS_TIMEOUT }}
 map $http_x_forwarded_proto $proxy_x_forwarded_proto {
   default $http_x_forwarded_proto;
   ''      $scheme;
@@ -35,7 +35,7 @@ upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len 
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else }} {{ $foundhttp := "false" }} {{ range $address := $container.Addresses }} {{ if eq $address.Port "80" }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ end }} {{ if ne $upIdleConnections "0" }} 
     keepalive {{ $upIdleConnections }}; {{ end }} {{ end }}
-} {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
+} {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ $sslForce := or (first (groupByKeys $containers "Env.VIRTUAL_SSL_FORCE")) $sslForce }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
 server {
     limit_conn perip {{ $secLimitConsPerIp }};
     limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if eq $autoRedirectDirection "0" }}    
@@ -45,14 +45,14 @@ server {
     server_name {{ $host }};
     listen 443 ssl;
     rewrite ^(.*) https://{{ $prefix }}.{{ $host }}$1 permanent; {{ end }}
-} {{ end }} {{ if (and (eq $forceSSL "1") (eq $allowHttp "0")) }}
+} {{ end }} {{ if eq $sslForce "1") }}
 server {
     server_name {{ $host }};
     rewrite ^(.*) https://{{ $host }}$1 permanent;
-} {{ end }} {{ if eq $allowHttp "1" }}
+} {{ else }}
 server {
     server_name {{ $host }};
-    listen 80; {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+    listen 80; {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};
@@ -64,9 +64,9 @@ server {
     }
 } {{ end }}
 server {
+    server_name {{ $host }};
     limit_conn perip {{ $secLimitConsPerIp }};
-    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
-    server_name {{ $host }}; {{ if eq $spdyEnabled "1" }}
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if eq $spdyEnabled "1" }}
     listen 443 ssl spdy; {{ else }}
     listen 443 ssl; {{ end }}
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
@@ -79,12 +79,13 @@ server {
     ssl_session_timeout {{ $sslSessionTimeout }};
     ssl_session_cache shared:SSL:{{ $sslSessionCache }}; {{ $certBundle := replace "ccii" "cc" $cert -1 }} {{ $certBundle := replace $certBundle "ii" $infix -1 }}
     ssl_certificate /etc/nginx/certs/{{ (printf "%s.crt" $certBundle) }};
-    ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }}; {{ if eq $spdyEnabled "1" }}
+    ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }}; {{ if (exists (printf "/etc/nginx/certs/%s.dhparam.pem" $cert)) }}
+    ssl_dhparam {{ printf "/etc/nginx/certs/%s.dhparam.pem" $cert }}; {{ end }} {{ if eq $spdyEnabled "1" }} 
     add_header Alternate-Protocol  443:npn-spdy/3; {{ end }}
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
     add_header X-Frame-Options SAMEORIGIN;
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};
@@ -107,7 +108,7 @@ server {
     listen 80 default_server;
     server_name {{ $host }}; {{ else }}
     server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
-    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
+    include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }} {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }} {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }} {{ $uriAndTargetArray := split $uriAndTarget $seppi }} {{ $uri := $uriAndTargetArray[0] }} {{ $target := $uriAndTargetArray[1] }} {{ $kind := or ( $uriAndTargetArray[2] "root" ) }}
     location {{ $uri }} {
         internal;
      {{ $kind }}: {{ $target }};
