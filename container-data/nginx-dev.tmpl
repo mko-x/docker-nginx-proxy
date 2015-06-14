@@ -302,7 +302,7 @@ server {
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
 
-                location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+                location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
                     proxy_pass {{ $proto }}://{{ $host }};
                 }
 
@@ -370,7 +370,7 @@ server {
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
                 
-                location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+                location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
                     proxy_pass {{ $proto }}://{{ $host }};
                 }
                 

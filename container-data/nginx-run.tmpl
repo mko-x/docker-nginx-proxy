@@ -51,7 +51,7 @@ server {
 server {
     server_name {{ $host }};
     listen 80;
-    location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+    location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
         proxy_pass {{ $proto }}://{{ $host }};
     }
     location / {
@@ -83,7 +83,7 @@ server {
     add_header X-Frame-Options SAMEORIGIN;
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
-    location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+    location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
         proxy_pass {{ $proto }}://{{ $host }};
     }
     location / {
