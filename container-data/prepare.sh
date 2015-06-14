@@ -3,7 +3,7 @@ set -e
 
 echo "Writing proxy global config..."
 
-echo "Proxy User Name: $GLOB_PROXY_USER_NAME"
+echo "Proxy User Name: $GLOB_USER_NAME"
 sed -i -e "s,S3dProxyUser,user ${GLOB_USER_NAME};,g" /etc/nginx/nginx.conf
 
 echo "Proxy Worker Process Count: ${GLOB_WORKER_COUNT}"
@@ -15,7 +15,7 @@ sed -i -e "s,S3dErrorLogLevel,${GLOB_ERROR_LOG_LEVEL},g" /etc/nginx/nginx.conf
 echo "Proxy Worker Connections Count: ${GLOB_WORKER_CONNECTIONS}"
 sed -i -e "s,S3dWorkerConnections,${GLOB_WORKER_CONNECTIONS},g" /etc/nginx/nginx.conf
 
-echo "Proxy Accepting Multiple Connections at once: "
+echo "Proxy Accepting Multiple Connections at once: ${GLOB_WORKER_MULTI_ACCEPT}"
 sed -i -e "s,S3dMultiAccept,${GLOB_WORKER_MULTI_ACCEPT},g" /etc/nginx/nginx.conf
 
 echo "Proxy KeepAlive Timeout: ${GLOB_KEEPALIVE_TIMEOUT}"
