@@ -96,9 +96,10 @@ server { {{ if eq $autoRedirectDirection "0" }}
 } {{ end }}
 server {
     limit_conn perip {{ $secLimitConsPerIp }};
-    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if (and ($.Env.DEFAULT_HOST) (eq $.Env.DEFAULT_HOST $host) ) }}
+    limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay; {{ if $.Env.DEFAULT_HOST }} {{ if eq $.Env.DEFAULT_HOST $host }}
     listen 80 default_server;
     server_name {{ $host }}; {{ else }}
+    server_name {{ $host }}; {{ end }} {{ else }}
     server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location / {
