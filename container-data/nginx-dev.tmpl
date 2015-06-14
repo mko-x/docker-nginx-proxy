@@ -199,10 +199,6 @@ server {
 
         server {
             
-            {{/* Security limits */}}
-            limit_conn perip {{ $secLimitConsPerIp }};
-            limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
-            
             {{ if eq $autoRedirectDirection "0" }}
             {{/* Redirect prefixed host to plain host via moved permanently */}}
     
@@ -256,10 +252,6 @@ server {
         server {
                 server_name {{ $host }};
 
-                {{/* Security limits */}}
-                limit_conn perip {{ $secLimitConsPerIp }};
-                limit_req zone=persec burst={{$secLimitReqsBurst}} nodelay;
-
                 {{/* SPDY effect 1 */}}
                 {{ if eq $spdyEnabled "1" }}
                     listen 443 ssl spdy;
@@ -310,6 +302,10 @@ server {
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
 
+                location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+                    proxy_pass {{ $proto }}://{{ $host }};
+                }
+
                 location / {
             
                     {{/* Pass with proto optionally to provide forcing connection to backend via protocol like HTTPS if necessary */}}
@@ -320,6 +316,10 @@ server {
                         auth_basic "Provide authentication for {{ $host }}";
                         auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
                     {{ end }}
+                    
+                    {{/* Security limits */}}
+                    limit_conn perip {{ $secLimitConsPerIp }};
+                    limit_req zone=persec burst={{ $secLimitReqsBurst }};
                 }
                 
         }
@@ -354,22 +354,26 @@ server {
         {{/* HTTP proxy */}}
         server {
                 {{/* Allow to be the default host, answering mislead requests if set by env var. */}}
-                {{ if (and ($.Env.DEFAULT_HOST) (eq $.Env.DEFAULT_HOST $host) ) }}
-            	    listen 80 default_server;
-            	    server_name {{ $host }};
-            	{{ else }}
-            	  server_name {{ $host }};
-            	{{ end }}
-
-                {{/* Security limits */}}
-                limit_conn perip {{ $secLimitConsPerIp }};
-                limit_req zone=persec burst={{$secLimitReqsBurst }} nodelay;
+                {{ if $.Env.DEFAULT_HOST }}
+                    {{ if eq $.Env.DEFAULT_HOST $host }}
+                listen 80 default_server;
+                server_name {{ $host }};
+                    {{ else }}
+                server_name {{ $host }};
+                    {{ end }}
+                {{ else }}
+                server_name {{ $host }};
+                {{ end }}
 
                 {{/* Allow custom configuration at 'gusto' */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
-
+                
+                location ~* \.(jpe?g|png|gif|css|ico|js)$ {
+                    proxy_pass {{ $proto }}://{{ $host }};
+                }
+                
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
                 
@@ -378,6 +382,10 @@ server {
                             auth_basic "Provide authentication for {{ $host }}";
                             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
                         {{ end }}
+                        
+                        {{/* Security limits */}}
+                        limit_conn perip {{ $secLimitConsPerIp }};
+                        limit_req zone=persec burst={{$secLimitReqsBurst }};
                 }
                 
                 
