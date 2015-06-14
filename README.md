@@ -33,7 +33,7 @@ It provides/uses [nginx](http://nginx.org/ru/) limiting capabilities with differ
 
 # Basics
 
-## About
+## FROM
 
 **[Jason Wilder](https://github.com/jwilder)** created [nginx-proxy](https://github.com/jwilder/nginx-proxy) for docker based on his [docker-gen](https://registry.hub.docker.com/u/jwilder/docker-gen/) and **Igor Sysoev's** [nginx](http://nginx.org/ru/).
 
