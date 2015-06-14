@@ -117,7 +117,7 @@ ENV GLOB_LIMIT_REQS_BURST 80
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
-RUN chmod a+x /up/prepare.sh && ./up/prepare.sh 
+RUN chmod a+x /up/prepare.sh && bash ./up/prepare.sh 
 RUN rm -rf /up
 
 # Configure and schedule log rotation
