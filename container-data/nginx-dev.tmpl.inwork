@@ -239,6 +239,35 @@ server {
                 server_name {{ $host }};
                 listen 80;
                 
+                {{/* Handle static file serving if requested by container */}}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
+
+                    {{/* Allow custom seperators due to regex */}}
+                    {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
+                    {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
+                
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
+
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
+                {{ end }}
+                
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
                 
@@ -310,6 +339,35 @@ server {
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
 
+                {{/* Handle static file serving if requested by container */}}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
+
+                    {{/* Allow custom seperators due to regex */}}
+                    {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
+                    {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
+            
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
+
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
+                {{ end }}
+
                 location / {
             
                     {{/* Pass with proto optionally to provide forcing connection to backend via protocol like HTTPS if necessary */}}
@@ -368,6 +426,35 @@ server {
                 {{/* Allow custom configuration at 'gusto' */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
+                {{ end }}
+
+                {{/* Handle static file serving if requested by container */}}
+                {{ range $uriAndTarget := groupByMulti $containers "Env.VIRTUAL_STATIC_FILE_CONFIG" "," }}
+
+                    {{/* Allow custom seperators due to regex */}}
+                    {{ $seppi := or (first (groupByKeys $containers "Env.VIRTUAL_STATIC_CONFIG_ITEM_SEPERATOR")) ">" }}
+                    {{ $uriAndTargetArray := split $uriAndTarget $seppi }}
+            
+                    {{ /* Length Check */}}
+                    {{ if len ( uriAndTargetArray ) gt 1 }}
+
+                        {{/* The location URI/regex to look for */}}
+                        {{ $uri := first ( $uriAndTargetArray ) }}
+                        {{/* The target path/URL to redirect to */}}
+                        {{ $target := itemAt ( $uriAndTargetArray, 1 ) }}
+                        {{/* The kind of link (default) alias, root or proxy_pass */}}
+                        {{ $kind := or ( last ( $uriAndTargetArray ) "root" ) }}
+
+                        {{/* Add the internal location */}}
+                        location {{ $uri }} {
+                            internal;
+                            {{ $kind }}: {{ $target }};
+                        }
+
+                    {{ /* Length Check end. */}}
+                    {{ end }}
+
+                {{ /* Static file serving end. */}}
                 {{ end }}
 
                 location / {
