@@ -294,6 +294,7 @@ server {
                 {{ end }}
                 {{/* Ensure long run security policy */}}
                 add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+                {{/* add x frame options to ensure sandboxed security with add_header X-Frame-Options SAMEORIGIN; */}}
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
