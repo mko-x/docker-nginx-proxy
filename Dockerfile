@@ -19,7 +19,7 @@ RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/fore
  && chmod u+x /usr/local/bin/forego
 
 # Set docker gen version to use
-ENV DOCKER_GEN_VERSION 0.3.9
+ENV DOCKER_GEN_VERSION 0.4.0
 
 # Install Docker-Gen
 RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
