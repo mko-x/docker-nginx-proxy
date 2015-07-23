@@ -1,4 +1,4 @@
-FROM nginx:1.9.0
+FROM nginx:1.9.3
 MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
 
 # rm default conf data from parent image
