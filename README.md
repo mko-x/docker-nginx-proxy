@@ -322,13 +322,19 @@ The docker host this image is working with/to. You can run a docker container on
 ## GLOB_LIMIT_CONS_PER_IP
 ### Info
 Define the maximum amount of connections per IP to allowed. If limit is exceeded, server will not respond to this IP for next 5 minutes. Protects the proxy from DOS via connection overflow.
+You may need to exceed that for bigger applications like JIRA.
 ### Default: 50
 ---
 ## GLOB_LIMIT_REQS_BURST
 ### Info
-Define the peak amount of requests per connection allowed. If a client 
-ENV GLOB_LIMIT_REQS_BURST 80
-
+Define the peak amount of requests per connection allowed. If a client exceeds that, no more requests will be forwardded.
+You may need to exceed that for bigger applications like JIRA.
+### Default: 80
+---
+## GLOB_WILD_CORS
+### Info
+Allows any cross origin requests globally.
+### Default: 0
 
 # Big Customization
 

@@ -10,6 +10,7 @@
 {{ $allowHttp := "0" }}
 {{ $port := "none" }}
 {{ $upIdleConnections := "0" }}
+{{ $enableWildCors := "0" }}
 
 {{/* Global env var assignments */}}
 {{ $secLimitConsPerIp := .Env.GLOB_LIMIT_CONS_PER_IP }}
@@ -34,6 +35,8 @@
 {{ $allowHttp := .Env.GLOB_ALLOW_HTTP_FALLBACK }}
 
 {{ $upIdleConnections := .Env.GLOB_UPSTREAM_IDLE_CONNECTIONS }}
+
+{{ $enableWildCors := .Env.GLOB_WILD_CORS }}
 
 ## configuration input check
 # bundled infix: {{.Env.GLOB_SSL_CERT_BUNDLE_INFIX}}
@@ -241,9 +244,14 @@ server {
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
                 
-                        {{ if ne $origins "null" }}
-                            add_header "Access-Control-Allow-Origin" $origins;
+                        {{ if eq $$enableWildCors "1" }}
+                            add_header "Access-Control-Allow-Origin" "*";
+                        {{ else }}
+                            {{ if ne $origins "null" }}
+                                add_header "Access-Control-Allow-Origin" $origins;
+                            {{ end }}
                         {{ end }}
+                        
                         {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                             auth_basic "Provide authentication for {{ $host }}";
                             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
@@ -304,8 +312,12 @@ server {
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
-                {{ if ne $origins "null" }}
-                    add_header "Access-Control-Allow-Origin" $origins;
+                {{ if eq $$enableWildCors "1" }}
+                    add_header "Access-Control-Allow-Origin" "*";
+                {{ else }}
+                    {{ if ne $origins "null" }}
+                        add_header "Access-Control-Allow-Origin" $origins;
+                    {{ end }}
                 {{ end }}
 
                 {{/* Custom include handling */}}

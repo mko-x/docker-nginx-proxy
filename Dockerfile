@@ -114,6 +114,9 @@ ENV GLOB_LIMIT_CONS_PER_IP 50
 # Define the peak amount of requests per connection allowed.
 ENV GLOB_LIMIT_REQS_BURST 80
 
+# Allow CORS anywhere globally
+ENV GLOB_WILD_CORS "0"
+
 # Connect to docker host via socket by default
 ENV DOCKER_HOST unix:///tmp/docker.sock
 
