@@ -9,7 +9,7 @@
 - DD -> Dynamic Docker
 - RPS -> Reverse Proxy Server
 
-![nginx 1.9.0](https://img.shields.io/badge/nginx-1.9.0-brightgreen.svg?style=flat-square)
+![nginx 1.9.3](https://img.shields.io/badge/nginx-1.9.3-brightgreen.svg?style=flat-square)
 ![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
 ![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
 ![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)
@@ -66,7 +66,7 @@ You find a copy of Jason's readme at the end of this one. It's just to easyily p
 
 
 [nginx](http://nginx.org/ru/)
-&nbsp;&nbsp;![nginx 1.9.0](https://img.shields.io/badge/nginx-1.9.0-brightgreen.svg?style=flat-square)
+&nbsp;&nbsp;![nginx 1.9.3](https://img.shields.io/badge/nginx-1.9.3-brightgreen.svg?style=flat-square)
 
 [docker-gen](https://github.com/jwilder/docker-gen)
 &nbsp;&nbsp;![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
@@ -118,6 +118,30 @@ Default: value of [GLOB_SSL_FORCE](## GLOB_SSL_FORCE) - which defaults to "1"
     docker run -v /var/local/static/images:/var/www/images \
         -e VIRTUAL_HOST=example.org \
         -e VIRTUAL_SSL_FORCE="0" \
+        ... target/image
+
+### VIRTUAL_ORIGINS
+
+#### Info
+
+Allow additional origins to support [CORS](https://de.wikipedia.org/wiki/Cross-Origin_Resource_Sharing).
+
+#### Pattern
+
+    VIRTUAL_ORIGINS="<proto>://<domain>.<tld>"
+
+#### Example
+
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_ORIGINS=cdn.org \
+        ... target/image
+        
+#### Allow all
+
+    docker run -v /var/local/static/images:/var/www/images \
+        -e VIRTUAL_HOST=example.org \
+        -e VIRTUAL_ORIGINS="*" \
         ... target/image
 
 ## More understanding

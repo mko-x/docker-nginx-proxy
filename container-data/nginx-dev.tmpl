@@ -191,6 +191,9 @@ server {
     {{/* Allow force ssl overrides by single container or container groups */}}
     {{ $sslForce := or (first (groupByKeys $containers "Env.VIRTUAL_SSL_FORCE")) $sslForce }}
 
+    {{/* Set CORS if set */}}
+    {{ $origins := or (first (groupByKeys $containers "Env.VIRTUAL_ORIGINS")) "null" }}
+
     {{/* MAIN server configuration task. */}}
     {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }}
     {{/* Valid HTTPS certificate and key files found. */}}
@@ -238,6 +241,9 @@ server {
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
                 
+                        {{ if ne $origins "null" }}
+                            add_header "Access-Control-Allow-Origin" $origins;
+                        {{ end }}
                         {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                             auth_basic "Provide authentication for {{ $host }}";
                             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
@@ -297,6 +303,10 @@ server {
                 {{/* add x frame options to ensure sandboxed security with add_header X-Frame-Options SAMEORIGIN; */}}
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
+
+                {{ if ne $origins "null" }}
+                    add_header "Access-Control-Allow-Origin" $origins;
+                {{ end }}
 
                 {{/* Custom include handling */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}

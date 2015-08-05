@@ -35,7 +35,7 @@ upstream {{ $host }} { {{ range $container := $containers }} {{ $addrLen := len 
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ else }} {{ $foundhttp := "false" }} {{ range $address := $container.Addresses }} {{ if eq $address.Port "80" }}
     server {{ $address.IP }}:{{ $address.Port }}{{ $path }}; {{ end }} {{ end }} {{ end }} {{ if ne $upIdleConnections "0" }} 
     keepalive {{ $upIdleConnections }}; {{ end }} {{ end }}
-} {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ $sslForce := or (first (groupByKeys $containers "Env.VIRTUAL_SSL_FORCE")) $sslForce }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
+} {{ $proto := or (first (groupByKeys $containers "Env.VIRTUAL_PROTO")) "http" }} {{ $certName := (first (groupByKeys $containers "Env.CERT_NAME")) }} {{ $vhostCert := (closest (dir "/etc/nginx/certs") (printf "%s.crt" $host))}} {{ $vhostCert := replace $vhostCert ".crt" "" -1 }} {{ $vhostCert := replace $vhostCert ".key" "" -1 }} {{ $cert := (coalesce $certName $vhostCert) }} {{ $sslForce := or (first (groupByKeys $containers "Env.VIRTUAL_SSL_FORCE")) $sslForce }} {{ $origins := or (first (groupByKeys $containers "Env.VIRTUAL_ORIGINS")) "null" }} {{ if (and (ne $cert "") (exists (printf "/etc/nginx/certs/%s.crt" $cert)) (exists (printf "/etc/nginx/certs/%s.key" $cert))) }} {{ if eq $autoRedirectEnabled "1" }}
 server { {{ if eq $autoRedirectDirection "0" }}    
     server_name  {{ $prefix }}.{{ $host }};
     listen 443 ssl;
@@ -57,7 +57,8 @@ server {
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
         auth_basic "Provide authentication for {{ $host }}";
-        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if ne $origins "null" }}
+        add_header "Access-Control-Allow-Origin" $origins; {{ end }}
         limit_conn perip {{ $secLimitConsPerIp }};
         limit_req zone=persec burst={{ $secLimitReqsBurst }};
     }
@@ -80,7 +81,8 @@ server {
     ssl_dhparam {{ printf "/etc/nginx/certs/%s.dhparam.pem" $cert }}; {{ end }} {{ if eq $spdyEnabled "1" }} 
     add_header Alternate-Protocol  443:npn-spdy/3; {{ end }}
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
-    add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+    add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} {{ if ne $origins "null" }}
+    add_header "Access-Control-Allow-Origin" $origins; {{ end }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
         proxy_pass {{ $proto }}://{{ $host }};
