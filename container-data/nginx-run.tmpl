@@ -57,7 +57,7 @@ server {
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
         auth_basic "Provide authentication for {{ $host }}";
-        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $$enableWildCors "1" }}
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
         add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
         add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
         limit_conn perip {{ $secLimitConsPerIp }};
@@ -82,7 +82,7 @@ server {
     ssl_dhparam {{ printf "/etc/nginx/certs/%s.dhparam.pem" $cert }}; {{ end }} {{ if eq $spdyEnabled "1" }} 
     add_header Alternate-Protocol  443:npn-spdy/3; {{ end }}
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
-    add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} {{ if eq $$enableWildCors "1" }}
+    add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} {{ if eq $enableWildCors "1" }}
     add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
     add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}

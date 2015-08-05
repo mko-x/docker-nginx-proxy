@@ -244,7 +244,7 @@ server {
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
                 
-                        {{ if eq $$enableWildCors "1" }}
+                        {{ if eq $enableWildCors "1" }}
                             add_header "Access-Control-Allow-Origin" "*";
                         {{ else }}
                             {{ if ne $origins "null" }}
@@ -312,7 +312,7 @@ server {
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
-                {{ if eq $$enableWildCors "1" }}
+                {{ if eq $enableWildCors "1" }}
                     add_header "Access-Control-Allow-Origin" "*";
                 {{ else }}
                     {{ if ne $origins "null" }}
