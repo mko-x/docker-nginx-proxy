@@ -312,6 +312,9 @@ server {
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
+                {{/* CSP support */}}
+                add_header content-security-policy default-src *;script-src https://*.{{ $host }} http://*.{{ $host }};
+
                 {{/* Custom include handling */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
