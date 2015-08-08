@@ -7,9 +7,14 @@ RUN rm -rf /etc/nginx/*
 # Install packages
 RUN apt-get update -y -qq \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends \
+    # ssl support
     ca-certificates \
+    # download support
     wget \
+    # scheduler support
     cron \
+    # editing support
+    nano \
  && apt-get clean -y -qq \
  && apt-get autoremove -y -qq \
  && rm -r /var/lib/apt/lists/*
