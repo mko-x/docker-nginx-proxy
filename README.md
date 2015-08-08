@@ -35,7 +35,7 @@ It provides/uses [nginx](http://nginx.org/ru/) limiting capabilities with differ
 
 ## FROM
 
-**[Jason Wilder](https://github.com/jwilder)** created [nginx-proxy](https://github.com/jwilder/nginx-proxy) for docker based on his [docker-gen](https://registry.hub.docker.com/u/jwilder/docker-gen/) and **Igor Sysoev's** [nginx](http://nginx.org/ru/).
+**[Jason Wilder](https://github.com/jwilder)** created [nginx-proxy](https://github.com/jwilder/nginx-proxy) for docker based on his [docker-gen](https://registry.hub.docker.com/u/jwilder/docker-gen/) and [nginx](http://nginx.org/ru/) created by **Igor Sysoev**.
 
 This fork is some kind of refactoring and extension of Jason's primarily work. So I modified a lot but I didn't change the core functionality itself. Modifications are triggered by division and extension to be able to meet my demands.
 
@@ -45,7 +45,7 @@ This fork is some kind of refactoring and extension of Jason's primarily work. S
 
 ## More
 
-See also readme at Jason's [github repo](https://github.com/jwilder/nginx-proxy) for more information about [docker-gen](https://github.com/jwilder/docker-gen), [templates](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/).
+See also the readme at Jason's [github repo](https://github.com/jwilder/nginx-proxy) for more information about [docker-gen](https://github.com/jwilder/docker-gen) and look at his site for information about [templates](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/).
 
 Topics covered there among others:
 
@@ -91,6 +91,7 @@ For example:
 - SSL: Bundled Certs / CA chains
 - SSL: OCSP
 - automatic redirects
+- CORS support
 - [nginx](http://nginx.org/ru/) worker config
 
 Optional: Easy using of optimisation features of [nginx](http://nginx.org/ru/) as they are provided in general but must be activated via environment variables.
