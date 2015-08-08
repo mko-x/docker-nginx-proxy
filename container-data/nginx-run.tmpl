@@ -50,16 +50,16 @@ server {
 } {{ else }}
 server {
     server_name {{ $host }};
-    listen 80;
+    listen 80; {{ if eq $enableWildCors "1" }}
+    add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
+    add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
     location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
         proxy_pass {{ $proto }}://{{ $host }};
     }
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
         auth_basic "Provide authentication for {{ $host }}";
-        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
-        add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
-        add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
         limit_conn perip {{ $secLimitConsPerIp }};
         limit_req zone=persec burst={{ $secLimitReqsBurst }};
     }
@@ -81,7 +81,9 @@ server {
     ssl_certificate_key /etc/nginx/certs/{{ (printf "%s.key" $cert) }}; {{ if (exists (printf "/etc/nginx/certs/%s.dhparam.pem" $cert)) }}
     ssl_dhparam {{ printf "/etc/nginx/certs/%s.dhparam.pem" $cert }}; {{ end }} {{ if eq $spdyEnabled "1" }} 
     add_header Alternate-Protocol  443:npn-spdy/3; {{ end }}
-    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains"; {{ if eq $enableWildCors "1" }}
+    add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
+    add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
     add_header content-security-policy default-src *;script-src https://*.{{ $host }} http://*.{{ $host }};
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} 
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
@@ -91,9 +93,7 @@ server {
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
         auth_basic "Provide authentication for {{ $host }}";
-        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
-        add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
-        add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
         limit_conn perip {{ $secLimitConsPerIp }};
         limit_req zone=persec burst={{ $secLimitReqsBurst }};
     }
@@ -108,7 +108,9 @@ server { {{ if $.Env.DEFAULT_HOST }} {{ if eq $.Env.DEFAULT_HOST $host }}
     listen 80 default_server;
     server_name {{ $host }}; {{ else }}
     server_name {{ $host }}; {{ end }} {{ else }}
-    server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
+    server_name {{ $host }}; {{ end }} {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} {{ if eq $enableWildCors "1" }}
+    add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
+    add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location ~* \.(jpe?g|png|gif|css|ico|js)$ {
         proxy_pass {{ $proto }}://{{ $host }};
@@ -116,9 +118,7 @@ server { {{ if $.Env.DEFAULT_HOST }} {{ if eq $.Env.DEFAULT_HOST $host }}
     location / {
             proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
             auth_basic "Provide authentication for {{ $host }}";
-            auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
-            add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
-            add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
+            auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}
             limit_conn perip {{ $secLimitConsPerIp }};
             limit_req zone=persec burst={{ $secLimitReqsBurst }};
     }

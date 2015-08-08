@@ -241,16 +241,17 @@ server {
                 server_name {{ $host }};
                 listen 80;
                 
+            {{/* CORS support */}}
+            {{ if eq $enableWildCors "1" }}
+                add_header "Access-Control-Allow-Origin" "*";
+            {{ else }}
+                {{ if ne $origins "null" }}
+                    add_header "Access-Control-Allow-Origin" $origins;
+                {{ end }}
+            {{ end }}
+                
                 location / {
                         proxy_pass {{ $proto }}://{{ $host }};
-                
-                        {{ if eq $enableWildCors "1" }}
-                            add_header "Access-Control-Allow-Origin" "*";
-                        {{ else }}
-                            {{ if ne $origins "null" }}
-                                add_header "Access-Control-Allow-Origin" $origins;
-                            {{ end }}
-                        {{ end }}
                         
                         {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                             auth_basic "Provide authentication for {{ $host }}";
@@ -312,6 +313,15 @@ server {
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
+                {{/* CORS support */}}
+                {{ if eq $enableWildCors "1" }}
+                    add_header "Access-Control-Allow-Origin" "*";
+                {{ else }}
+                    {{ if ne $origins "null" }}
+                        add_header "Access-Control-Allow-Origin" $origins;
+                    {{ end }}
+                {{ end }}
+
                 {{/* CSP support */}}
                 add_header content-security-policy default-src *;script-src https://*.{{ $host }} http://*.{{ $host }};
 
@@ -333,14 +343,6 @@ server {
                     {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                         auth_basic "Provide authentication for {{ $host }}";
                         auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-                    {{ end }}
-                    
-                    {{ if eq $enableWildCors "1" }}
-                        add_header "Access-Control-Allow-Origin" "*";
-                    {{ else }}
-                        {{ if ne $origins "null" }}
-                            add_header "Access-Control-Allow-Origin" $origins;
-                        {{ end }}
                     {{ end }}
                     
                     {{/* Security limits */}}
