@@ -85,6 +85,7 @@ server {
     add_header Access-Control-Allow-Origin *; {{ else }}  {{ if ne $origins "null" }}
     add_header Access-Control-Allow-Origin {{ $origins }}; {{ end }} {{ end }}
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} 
+    add_header X-Frame-Options ALLOW; 
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
         proxy_pass {{ $proto }}://{{ $host }};
