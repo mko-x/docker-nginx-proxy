@@ -16,6 +16,12 @@
 
 # Quickstart
 
+## Latest Stable
+
+    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy:stable
+
+## Latest Master
+
     docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy
 
 # About
