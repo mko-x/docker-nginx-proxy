@@ -243,10 +243,10 @@ server {
                 
             {{/* CORS support */}}
             {{ if eq $enableWildCors "1" }}
-                add_header "Access-Control-Allow-Origin" "*";
+                add_header Access-Control-Allow-Origin *;
             {{ else }}
                 {{ if ne $origins "null" }}
-                    add_header "Access-Control-Allow-Origin" $origins;
+                    add_header Access-Control-Allow-Origin {{ $origins }};
                 {{ end }}
             {{ end }}
                 
@@ -315,10 +315,10 @@ server {
 
                 {{/* CORS support */}}
                 {{ if eq $enableWildCors "1" }}
-                    add_header "Access-Control-Allow-Origin" "*";
+                    add_header Access-Control-Allow-Origin *;
                 {{ else }}
                     {{ if ne $origins "null" }}
-                        add_header "Access-Control-Allow-Origin" $origins;
+                        add_header Access-Control-Allow-Origin {{ $origins }};
                     {{ end }}
                 {{ end }}
 
@@ -398,6 +398,15 @@ server {
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
                 {{ end }}
                 
+                {{/* CORS support */}}
+                {{ if eq $enableWildCors "1" }}
+                    add_header Access-Control-Allow-Origin *;
+                {{ else }}
+                    {{ if ne $origins "null" }}
+                        add_header Access-Control-Allow-Origin {{ $origins }};
+                    {{ end }}
+                {{ end }}
+                
                 location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
                     proxy_pass {{ $proto }}://{{ $host }};
                 }
@@ -409,14 +418,6 @@ server {
                         {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                             auth_basic "Provide authentication for {{ $host }}";
                             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-                        {{ end }}
-                        
-                        {{ if eq $enableWildCors "1" }}
-                            add_header "Access-Control-Allow-Origin" "*";
-                        {{ else }}
-                            {{ if ne $origins "null" }}
-                                add_header "Access-Control-Allow-Origin" $origins;
-                            {{ end }}
                         {{ end }}
                         
                         {{/* Security limits */}}
