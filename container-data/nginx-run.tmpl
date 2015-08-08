@@ -84,7 +84,6 @@ server {
     add_header Strict-Transport-Security "max-age=31536000; includeSubdomains"; {{ if eq $enableWildCors "1" }}
     add_header Access-Control-Allow-Origin *; {{ else }}  {{ if ne $origins "null" }}
     add_header Access-Control-Allow-Origin {{ $origins }}; {{ end }} {{ end }}
-    add_header Content-Security-Policy "default-src *;script-src https://*.{{ $host }} http://*.{{ $host }}";
     add_header X-Content-Type-Options nosniff; {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }} 
     include {{ printf "/etc/nginx/vhost.d/%s" $host }}; {{ end }}
     location ~* \.(jpe?g|png|gif|css|ico|js|svg)$ {
