@@ -312,14 +312,6 @@ server {
                 {{/* Use nosniff header for those who support */}}
                 add_header X-Content-Type-Options nosniff;
 
-                {{ if eq $enableWildCors "1" }}
-                    add_header "Access-Control-Allow-Origin" "*";
-                {{ else }}
-                    {{ if ne $origins "null" }}
-                        add_header "Access-Control-Allow-Origin" $origins;
-                    {{ end }}
-                {{ end }}
-
                 {{/* Custom include handling */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
                     include {{ printf "/etc/nginx/vhost.d/%s" $host }};
@@ -338,6 +330,14 @@ server {
                     {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                         auth_basic "Provide authentication for {{ $host }}";
                         auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+                    {{ end }}
+                    
+                    {{ if eq $enableWildCors "1" }}
+                        add_header "Access-Control-Allow-Origin" "*";
+                    {{ else }}
+                        {{ if ne $origins "null" }}
+                            add_header "Access-Control-Allow-Origin" $origins;
+                        {{ end }}
                     {{ end }}
                     
                     {{/* Security limits */}}
@@ -404,6 +404,14 @@ server {
                         {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
                             auth_basic "Provide authentication for {{ $host }}";
                             auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+                        {{ end }}
+                        
+                        {{ if eq $enableWildCors "1" }}
+                            add_header "Access-Control-Allow-Origin" "*";
+                        {{ else }}
+                            {{ if ne $origins "null" }}
+                                add_header "Access-Control-Allow-Origin" $origins;
+                            {{ end }}
                         {{ end }}
                         
                         {{/* Security limits */}}
