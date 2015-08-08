@@ -90,7 +90,7 @@ server {
     location / {
         proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
         auth_basic "Provide authentication for {{ $host }}";
-        auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}{{ if eq $enableWildCors "1" }}
+        auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
         add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
         add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
         limit_conn perip {{ $secLimitConsPerIp }};
@@ -115,7 +115,7 @@ server { {{ if $.Env.DEFAULT_HOST }} {{ if eq $.Env.DEFAULT_HOST $host }}
     location / {
             proxy_pass {{ $proto }}://{{ $host }}; {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
             auth_basic "Provide authentication for {{ $host }}";
-            auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }}{{ if eq $enableWildCors "1" }}
+            auth_basic_user_file {{ (printf "/etc/nginx/htpasswd/%s" $host) }}; {{ end }} {{ if eq $enableWildCors "1" }}
             add_header "Access-Control-Allow-Origin" "*"; {{ else }}  {{ if ne $origins "null" }}
             add_header "Access-Control-Allow-Origin" $origins; {{ end }} {{ end }}
             limit_conn perip {{ $secLimitConsPerIp }};
