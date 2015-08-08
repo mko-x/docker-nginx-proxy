@@ -323,7 +323,7 @@ server {
                 {{ end }}
 
                 {{/* CSP support */}}
-                add_header content-security-policy default-src *;script-src https://*.{{ $host }} http://*.{{ $host }};
+                add_header content-security-policy "default-src *;script-src https://*.{{ $host }} http://*.{{ $host }}";
 
                 {{/* Custom include handling */}}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s" $host)) }}
