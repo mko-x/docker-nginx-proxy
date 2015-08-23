@@ -38,6 +38,8 @@ ADD ./container-data/nginx.conf /etc/nginx/
 ADD ./container-data/prepare.sh /up/prepare.sh
 ADD ./container-data/rotate_nginx_log.sh /usr/local/sbin/rotate_nginx_log.sh
 
+ENV TERM xterm
+
 # Choose the template to run, you may use dev for experimental use
 ENV GLOB_TMPL_MODE run
 
