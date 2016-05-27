@@ -72,10 +72,10 @@ You find a copy of Jason's readme at the end of this one. It's just to easyily p
 
 
 [nginx](http://nginx.org/ru/)
-&nbsp;&nbsp;![nginx 1.9.3](https://img.shields.io/badge/nginx-1.9.3-brightgreen.svg?style=flat-square)
+&nbsp;&nbsp;![nginx 1.9.12](https://img.shields.io/badge/nginx-1.9.12-brightgreen.svg?style=flat-square)
 
 [docker-gen](https://github.com/jwilder/docker-gen)
-&nbsp;&nbsp;![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
+&nbsp;&nbsp;![docker-gen 0.7.1](https://img.shields.io/badge/docker--gen-0.7.1-blue.svg?style=flat-square)
 
 [forego](https://github.com/ddollar/forego)
 &nbsp;&nbsp;![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
