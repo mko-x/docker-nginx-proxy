@@ -1,5 +1,5 @@
-FROM nginx:1.9.3
-MAINTAINER https://m-ko-x.de Markus Kosmal <code@m-ko-x.de>
+FROM nginx:stable
+MAINTAINER https://m-ko.de Markus Kosmal <code@m-ko.de>
 
 # rm default conf data from parent image
 RUN rm -rf /etc/nginx/*
