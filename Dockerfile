@@ -20,16 +20,16 @@ RUN apt-get update -y -qq \
  && rm -r /var/lib/apt/lists/*
  
 # Install Forego
-RUN wget -P /usr/local/bin -q https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
- && chmod u+x /usr/local/bin/forego
+ADD https://github.com/jwilder/forego/releases/download/v0.16.1/forego /usr/local/bin/forego
+RUN chmod u+x /usr/local/bin/forego
 
 # Set docker gen version to use
 ENV DOCKER_GEN_VERSION 0.7.1
 
 # Install Docker-Gen
-RUN wget -q https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
- && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
+RUN wget https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+  && tar -C /usr/local/bin -xvzf docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
+  && rm /docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz
 
 # Add content early as modified less often
 ADD ./container-data/Procfile /app/
