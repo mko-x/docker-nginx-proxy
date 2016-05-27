@@ -9,8 +9,8 @@
 - DD -> Dynamic Docker
 - RPS -> Reverse Proxy Server
 
-![nginx 1.9.3](https://img.shields.io/badge/nginx-1.9.3-brightgreen.svg?style=flat-square)
-![docker-gen 0.3.9](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
+![nginx 1.9.12](https://img.shields.io/badge/nginx-1.9.3-brightgreen.svg?style=flat-square)
+![docker-gen 0.7.1](https://img.shields.io/badge/docker--gen-0.3.9-blue.svg?style=flat-square)
 ![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
 ![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)
 
