@@ -1,6 +1,6 @@
 # docker-nginx-proxy
 
-![nginx logo](http://comlounge.net/material/logos/logo-nginx.png)
+![nginx logo](http://s.bebrand.de/header.png)
 
 ---
 
