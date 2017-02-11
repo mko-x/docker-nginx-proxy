@@ -24,7 +24,7 @@ ADD https://github.com/jwilder/forego/releases/download/v0.16.1/forego /usr/loca
 RUN chmod u+x /usr/local/bin/forego
 
 # Set docker gen version to use
-ENV DOCKER_GEN_VERSION 0.7.1
+ENV DOCKER_GEN_VERSION 0.7.3
 
 # Install Docker-Gen
 RUN wget https://github.com/jwilder/docker-gen/releases/download/$DOCKER_GEN_VERSION/docker-gen-linux-amd64-$DOCKER_GEN_VERSION.tar.gz \
