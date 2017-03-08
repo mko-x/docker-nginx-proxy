@@ -1,6 +1,6 @@
 # docker-nginx-proxy
 
-![nginx logo](http://s.bebrand.de/header.png)
+![nginx logo](https://bebrand.de/l/nginx.png)
 
 ---
 
@@ -9,8 +9,8 @@
 - DD -> Dynamic Docker
 - RPS -> Reverse Proxy Server
 
-![nginx 1.9.12](https://img.shields.io/badge/nginx-1.9.12-brightgreen.svg?style=flat-square)
-![docker-gen 0.7.1](https://img.shields.io/badge/docker--gen-0.7.1-blue.svg?style=flat-square)
+![nginx 1.10.3](https://img.shields.io/badge/nginx-1.10.3-brightgreen.svg?style=flat-square)
+![docker-gen 0.7.3](https://img.shields.io/badge/docker--gen-0.7.3-blue.svg?style=flat-square)
 ![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
 ![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)
 
@@ -72,10 +72,10 @@ You find a copy of Jason's readme at the end of this one. It's just to easyily p
 
 
 [nginx](http://nginx.org/ru/)
-&nbsp;&nbsp;![nginx 1.9.12](https://img.shields.io/badge/nginx-1.9.12-brightgreen.svg?style=flat-square)
+&nbsp;&nbsp;![nginx stable](https://img.shields.io/badge/nginx-stable-brightgreen.svg?style=flat-square)
 
 [docker-gen](https://github.com/jwilder/docker-gen)
-&nbsp;&nbsp;![docker-gen 0.7.1](https://img.shields.io/badge/docker--gen-0.7.1-blue.svg?style=flat-square)
+&nbsp;&nbsp;![docker-gen 0.7.3](https://img.shields.io/badge/docker--gen-0.7.3-blue.svg?style=flat-square)
 
 [forego](https://github.com/ddollar/forego)
 &nbsp;&nbsp;![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
