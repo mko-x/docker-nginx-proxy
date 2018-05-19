@@ -1,404 +1,6 @@
-# DEPRECATED
+![latest 0.7.0](https://img.shields.io/badge/latest-0.7.0-green.svg?style=flat)
+![nginx 1.13](https://img.shields.io/badge/nginx-1.13-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg) [![Build Status](https://travis-ci.org/jwilder/nginx-proxy.svg?branch=master)](https://travis-ci.org/jwilder/nginx-proxy) [![](https://img.shields.io/docker/stars/jwilder/nginx-proxy.svg)](https://hub.docker.com/r/jwilder/nginx-proxy 'DockerHub') [![](https://img.shields.io/docker/pulls/jwilder/nginx-proxy.svg)](https://hub.docker.com/r/jwilder/nginx-proxy 'DockerHub')
 
-This image is deprecated in favor of jwilder's original proxy [github repo](https://github.com/jwilder/nginx-proxy).
-
-# docker-nginx-proxy
-
-![nginx logo](https://bebrand.de/l/nginx.png)
-
----
-
-# **NGINX** DD RPS
-
-- DD -> Dynamic Docker
-- RPS -> Reverse Proxy Server
-
-![nginx 1.10.3](https://img.shields.io/badge/nginx-1.10.3-brightgreen.svg?style=flat-square)
-![docker-gen 0.7.3](https://img.shields.io/badge/docker--gen-0.7.3-blue.svg?style=flat-square)
-![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
-![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)
-
-# Quickstart
-
-## Latest Stable
-
-    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy:stable
-
-## Latest Master
-
-    docker run -it -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy
-
-# About
-
-A **nginx** based reverse-proxy with dynamic server configuration at runtime. Automatically generating configuration data triggered by Docker events.
-
-Easily customizable for specific use cases. Multilevel stacking of instances is possible to provide scalability support. 
-
-You can create and scale the backend via (beta) Docker mechanisms: 
-Use the [docker-compose **scale**](https://docs.docker.com/compose/cli/#scale) option or operate with [docker swarm](https://docs.docker.com/swarm/#nodes-setup).
-
-It provides/uses [nginx](http://nginx.org/ru/) limiting capabilities with different detection methods by default (connections per ip, burst requests/s).
-
----
-
-# Basics
-
-## FROM
-
-**[Jason Wilder](https://github.com/jwilder)** created [nginx-proxy](https://github.com/jwilder/nginx-proxy) for docker based on his [docker-gen](https://registry.hub.docker.com/u/jwilder/docker-gen/) and [nginx](http://nginx.org/ru/) created by **Igor Sysoev**.
-
-This fork is some kind of refactoring and extension of Jason's primarily work. So I modified a lot but I didn't change the core functionality itself. Modifications are triggered by division and extension to be able to meet my demands.
-
-## Thanks
-
-**Many thanks to Jason for his great work!**
-
-## More
-
-See also the readme at Jason's [github repo](https://github.com/jwilder/nginx-proxy) for more information about [docker-gen](https://github.com/jwilder/docker-gen) and look at his site for information about [templates](http://jasonwilder.com/blog/2014/03/25/automated-nginx-reverse-proxy-for-docker/).
-
-Topics covered there among others:
-
-- Multi Port
-- Multi Hosts
-- Wildcard Hosts
-
-- SSL Config
-- Basic Auth
-
-- Custom global or per vhost [nginx](http://nginx.org/ru/) configuration
-
-You find a copy of Jason's readme at the end of this one. It's just to easyily provide the version of his readme according to my fork.
-
----
-
-# Contains
-
-
-[nginx](http://nginx.org/ru/)
-&nbsp;&nbsp;![nginx stable](https://img.shields.io/badge/nginx-stable-brightgreen.svg?style=flat-square)
-
-[docker-gen](https://github.com/jwilder/docker-gen)
-&nbsp;&nbsp;![docker-gen 0.7.3](https://img.shields.io/badge/docker--gen-0.7.3-blue.svg?style=flat-square)
-
-[forego](https://github.com/ddollar/forego)
-&nbsp;&nbsp;![forego 0.16.1](https://img.shields.io/badge/forego-0.16.1-blue.svg?style=flat-square)
-
----
-
-# Modifications
-
-## More global env vars
-
-To make Jason's nginx-proxy more *configurable* for me without having to provide custom configs/includes, I added some **environment variables**. (I'm sorry Jason, I know you try to minimize amount of environment variables)
-
-All of them change the global behavior of nginx. (starting with "*GLOB_*")
-
-Using this image you can easily modify relevant values, configs or features via environment variables.
-
-For example:
-- Caching/Proxy-Caching
-- SSL: Bundled Certs / CA chains
-- SSL: OCSP
-- automatic redirects
-- CORS support
-- [nginx](http://nginx.org/ru/) worker config
-
-Optional: Easy using of optimisation features of [nginx](http://nginx.org/ru/) as they are provided in general but must be activated via environment variables.
-
-Further I added connection/IP based simple handling of request amount peaks.
-
-See details [below](# Global Environment Variables)
-
-## More container env vars
-
-### VIRTUAL_SSL_FORCE
-
-#### Info
-
-Change global https enforcing policy for a single container.
-
-Default: value of [GLOB_SSL_FORCE](## GLOB_SSL_FORCE) - which defaults to "1"
-
-#### Pattern
-
-    VIRTUAL_SSL_FORCE="<# vals "0" or "1" #>"
-
-#### Example
-
-    docker run -v /var/local/static/images:/var/www/images \
-        -e VIRTUAL_HOST=example.org \
-        -e VIRTUAL_SSL_FORCE="0" \
-        ... target/image
-
-### VIRTUAL_ORIGINS
-
-#### Info
-
-Allow additional origins to support [CORS](https://de.wikipedia.org/wiki/Cross-Origin_Resource_Sharing).
-
-#### Pattern
-
-    VIRTUAL_ORIGINS="<proto>://<domain>.<tld>"
-
-#### Example
-
-    docker run -v /var/local/static/images:/var/www/images \
-        -e VIRTUAL_HOST=example.org \
-        -e VIRTUAL_ORIGINS=cdn.org \
-        ... target/image
-        
-#### Allow all
-
-    docker run -v /var/local/static/images:/var/www/images \
-        -e VIRTUAL_HOST=example.org \
-        -e VIRTUAL_ORIGINS="*" \
-        ... target/image
-
-## More understanding
-
-Last but not least I tried to improve **readability** and documentation for easier understanding of the image's working principles. From my point of view. Therefore this repo contains an additional [nginx-dev template](https://github.com/mko-x/docker-nginx-proxy/blob/master/container-data/nginx-dev.tmpl) with a lot of documentation. That's just for my reference, you may have a look and try it yourself.
-
----
-
-# Global Environment Variables
-
-The image offers a bunch of environment variables allowing you easy **customization** and **optimization** even for more complex features.
-
----
-## GLOB_USER_NAME
-### Info
-The user which will run the proxy server.
-### Default:'nginx'
----
-## GLOB_MAX_BODY_SIZE
-### Info
-Set the [nginx](http://nginx.org/ru/) maximum body size.
-### Link 
-See [nginx docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
-### Default: 10m
----
-## GLOB_CACHE_ENABLE
-### Info
-Enables the multi staging proxy caching to increase performance and reduce latency. Active by default.
-### Default: *1*
----
-## GLOB_SSL_CERT_BUNDLE_INFIX
-### Info
-Set the insertion string inserted between cert file's name and cert file extension.Ignored if *GLOB_SSL_CERT_BUNDLE_ENABLED* is *false*
-### Default: "" ( empty)
----
-## GLOB_SSL_SESSION_TIMEOUT
-### Info
-Change ssl session timeout.
-### Link
-See [nginx ssl docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_timeout)
-### Default: 5m
----
-## GLOB_SSL_SESSION_CACHE
-### Info
-Modify size of shared ssl session cache.
-### Link
-See [nginx ssl docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache)
-### Default: 50m
----
-## GLOB_SSL_OCSP_VALID_TIME
-### Info
-Enable Online Certificate Status Protocol (OCSP) through setting this value to any != 0. If 0, GLOB_SSL_OCSP_DNS_ADDRESSES and GLOB_SSL_OCSP_DNS_TIMEOUT are ignored. 
-### Link
-See [nginx stapling docs](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_stapling) for details
-### Default: 0 (disabled)
----
-## GLOB_SSL_OCSP_DNS_ADDRESSES
-### Info
-DNS servers (2) to resolve the certificate verification from. Unused if GLOB_SSL_OCSP_VALID_TIME = 0. Uses [OpenNicProject](http://www.opennicproject.org/) DNS server and one provided by google. You can use google one's only as well with setting to e.g. "8.8.4.4 8.8.8.8".
-### Link
-See [nginx resolver docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
-### Default: 5.9.49.12 8.8.8.8
----
-## GLOB_SSL_OCSP_DNS_TIMEOUT
-### Info
-Timeout for name resolution. Unused if GLOB_SSL_OCSP_VALID_TIME = 0.
-### Link
-See [nginx resolver docs](http://nginx.org/en/docs/http/ngx_http_core_module.html#resolver) for details
-### Default: 10s
----
-## GLOB_SSL_FORCE
-### Info
-Redirect calls via http to https.
-### Default: 1
----
-## GLOB_DEFAULT_HOST
-### Info
-To set the default host for [nginx](http://nginx.org/ru/) use the env var `GLOB_DEFAULT_HOST=foo.bar.com`. 
-### Default: $host (current target host)
-
----
-## GLOB_SPDY_ENABLED
-### Info
-Enable high speed ssl spdy protocol for supporting clients.
-### Link
-See [nginx spdy docs](http://nginx.org/en/docs/http/ngx_http_spdy_module.html)
-### Default: 0
----
-## GLOB_HTTP_NO_SERVICE
-### Info
-You may want to return another status code in case of not matching server requests.
-### Default: 503
----
-## GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED
-### Info
-To easily tell the proxy to redirect requests from a prefixed domain to the none prefixed one and vice versa.
-### Default: 0
----
-## GLOB_AUTO_REDIRECT_PREFIX
-### Info
-Provide a custom prefix to include with auto redirect. Ignored if *GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED* is *false*
-use-cases: 
-- *www*.domain.org -> domain.org
-- domain.org -> *www*.domain.org
-- *api*.domain.org -> domain.org
-- domain.org -> *cdn*.domain.org
-
-### Default: www
-
----
-## GLOB_AUTO_REDIRECT_DIRECTION
-### Info
-To control source and destination of auto redirect. Ignored if GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED is not enabled.
-- 0: redirect from prefix to non-prefix
-- 1: redirect from non-prefix to prefix
-
-### Default: 0
-
----
-## GLOB_ALLOW_HTTP_FALLBACK
-###Info
-As HTTPS/SSL is enabled by default, this flag allows acces via HTTP as well.
-### Default: 0
----
-## GLOB_WORKER_COUNT
-### Info
-Set the maximum amount of concurrent worker processes of the server. 
-### Default: auto
-Defaults to auto -> usually count of available CPU cores.
----
-## GLOB_WORKER_CONNECTIONS
-### Info
-Specifies the total count of concurrent simultaneous connection for each worker.
-### Default: *256*
----
-## GLOB_WORKER_MULTI_ACCEPT
-### Info
-Allows the workers to handle multiple connections at once. Set to '*off*' if you want the worker to always handle only one connection at a time.
-### Default: on
----
-## GLOB_WORKER_RLIMIT_NOFILE
-### Info
-Defines the possible highest number of file handles a worker can hold concurrently.
-### Default: *1024*
----
-## GLOB_ERROR_LOG_LEVEL
-### Info
-Sets the loglevel for the **error** log output to print.
-Choose from: crit, error, warn, info, debug
-### Default: *error*
----
-## GLOB_KEEPALIVE_TIMEOUT
-### Info
-The time a worker will hold a connection to a client without a request in seconds.
-### Default: 60
----
-## GLOB_UPSTREAM_IDLE_CONNECTIONS
-### Info
-The number of connections to the upstream backend services that will be kept idle at maximum from nginx. It's turned off by default but with setting a value like 20 - there are always some idle connections available. This reduces the amount of HTTP/TCP connections that need to be created from scratch. This avoids the so called [HTTP Heavy Lifting](http://nginx.com/blog/http-keepalives-and-web-performance/)
-
-### Default: 0
----
-## GLOB_TMPL_MODE
-### Info
-By default the [nginx](http://nginx.org/ru/) configuration file is generated from *run*-template. For development issues you can set this variable to '*dev*' to have a more readable template to work on. Logical both the *run* and the *dev* template are doing the same.
-### Default: *run*
----
-## DOCKER_GEN_VERSION
-### Info
-The version of docker-gen to use.
-### Default: *0.3.9*
----
-## DOCKER_HOST
-### Info
-The docker host this image is working with/to. You can run a docker container only for the proxies to manage another docker container running the applications.
-### Default: '*unix:///tmp/docker.sock*'
----
-## GLOB_LIMIT_CONS_PER_IP
-### Info
-Define the maximum amount of connections per IP to allowed. If limit is exceeded, server will not respond to this IP for next 5 minutes. Protects the proxy from DOS via connection overflow.
-You may need to exceed that for bigger applications like JIRA.
-### Default: 50
----
-## GLOB_LIMIT_REQS_BURST
-### Info
-Define the peak amount of requests per connection allowed. If a client exceeds that, no more requests will be forwardded.
-You may need to exceed that for bigger applications like JIRA.
-### Default: 80
----
-## GLOB_WILD_CORS
-### Info
-Allows any cross origin requests globally.
-### Default: 0
-
-# Big Customization
-
-    docker run -d --name "mgt-op" \
-        -p 80:80 -p 443:443 \
-        -e GLOB_MAX_BODY_SIZE="1g" \
-        -e GLOB_SSL_SESSION_TIMEOUT="10m" \
-        -e GLOB_SSL_SESSION_CACHE="100m" \
-        -e GLOB_SSL_CERT_BUNDLE_INFIX=".chained" \
-        -e GLOB_ALLOW_HTTP_FALLBACK="1" \
-        -e GLOB_HTTPS_FORCE="0"
-        -e GLOB_SPDY_ENABLED="1" \
-        -e GLOB_HTTP_NO_SERVICE="404" \
-        -e GLOB_AUTO_REDIRECT_WITH_PREFIX_ENABLED="1" \
-        -e GLOB_AUTO_REDIRECT_PREFIX="subservice" \
-        -e AUTO_REDIRECT_DIRECTION="1" \
-        -v /etc/certs:/etc/nginx/certs \
-        -v /var/run/docker.sock:/tmp/docker.sock:ro mkodockx/docker-nginx-proxy
-        
-# Details
-Further information about several settings, reasons and the consequences.
-
-Just short explanations.
-
-## sendfile on
-It depends somehow on the use-case and the used kernel. But in general the sendfile implementation just 'pipes'(not exactly) information from one file descriptor(FD) to another within the kernel. So we have a decent direct disk I/O.
-
-By default sendfile is off. That causes the kernel to first read data from one FD, then writes it to the target FD.
-
-time of (*read()*  +  *write()*)  >  time of (*sendfile()*)
-
-## tcp_nodelay on
-The TCP stack has a mechanism implemented to avoid sending of too small packets. This mechanism will wait for a certain time to guarantee a packet is filled. The UNIX implementation is about 200ms. This mechanism is called [Nagle’s algorithm](http://en.wikipedia.org/wiki/Nagle's_algorithm). That was defined 1984.
-
-Today most of the data sent within a request/response exceeds the limit of one frame. But it's impossible to eactly fill it to the limit. So one can guess about 90% of traffic we have useless 200ms waiting for each packet.
-
-Activating this option will add the TCP_NODELAY option on the current connection's TCP stack.
-
-## tcp_nopush on
-As with tcp_nodelay will reduce waiting time, tcp_nopush tries to reduce the data size transmitted. As only FreeBSD is implementing TCP_NOPUSH in the TCP stack [nginx](http://nginx.org/ru/) will activate the TCP_CORK option on Linux. 
-
-Just like a real cork it blocks the outgoing packet until it reaches the critical mass to be worth transferring.
-
-The mechanism is pretty well documented in the Linux kernel [source code](http://lxr.free-electrons.com/source/net/ipv4/tcp_output.c?a=avr32#L1469).
-
-## sendfile + tcp_nodelay + tcp_nopush
-I leave to you now to combine the three effects and realize their benefits.
-
-If you don't get it, Frederic made a pretty good post([original (french)](https://t37.net/optimisations-nginx-bien-comprendre-sendfile-tcp-nodelay-et-tcp-nopush.html)/[english](https://t37.net/nginx-optimization-understanding-sendfile-tcp_nodelay-and-tcp_nopush.html) ) according to this topic. 
-
-# Origin Docs (commit 6719f7636fc63a9d4f4fc349aae03e2fe9a15a45)
-
-![nginx 1.9.0](https://img.shields.io/badge/nginx-1.9.0-brightgreen.svg) ![License MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 nginx-proxy sets up a container running nginx and [docker-gen][1].  docker-gen generates reverse proxy configs for nginx and reloads nginx when containers are started and stopped.
 
@@ -414,7 +16,56 @@ Then start any containers you want proxied with an env var `VIRTUAL_HOST=subdoma
 
     $ docker run -e VIRTUAL_HOST=foo.bar.com  ...
 
-Provided your DNS is setup to forward foo.bar.com to the a host running nginx-proxy, the request will be routed to a container with the VIRTUAL_HOST env var set.
+The containers being proxied must [expose](https://docs.docker.com/engine/reference/run/#expose-incoming-ports) the port to be proxied, either by using the `EXPOSE` directive in their `Dockerfile` or by using the `--expose` flag to `docker run` or `docker create`.
+
+Provided your DNS is setup to forward foo.bar.com to the host running nginx-proxy, the request will be routed to a container with the VIRTUAL_HOST env var set.
+
+### Image variants
+
+The nginx-proxy images are available in two flavors.
+
+#### jwilder/nginx-proxy:latest
+
+This image uses the debian:jessie based nginx image.
+
+    $ docker pull jwilder/nginx-proxy:latest
+
+#### jwilder/nginx-proxy:alpine
+
+This image is based on the nginx:alpine image. Use this image to fully support HTTP/2 (including ALPN required by recent Chrome versions). A valid certificate is required as well (see eg. below "SSL Support using letsencrypt" for more info).
+
+    $ docker pull jwilder/nginx-proxy:alpine
+
+### Docker Compose
+
+```yaml
+version: '2'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  whoami:
+    image: jwilder/whoami
+    environment:
+      - VIRTUAL_HOST=whoami.local
+```
+
+```shell
+$ docker-compose up
+$ curl -H "Host: whoami.local" localhost
+I'm 5b129ab83266
+```
+
+### IPv6 support
+
+You can activate the IPv6 support for the nginx-proxy container by passing the value `true` to the `ENABLE_IPV6` environment variable:
+
+    $ docker run -d -p 80:80 -e ENABLE_IPV6=true -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy
 
 ### Multiple Ports
 
@@ -431,9 +82,61 @@ If you need to support multiple virtual hosts for a container, you can separate 
 
 You can also use wildcards at the beginning and the end of host name, like `*.bar.com` or `foo.bar.*`. Or even a regular expression, which can be very useful in conjunction with a wildcard DNS service like [xip.io](http://xip.io), using `~^foo\.bar\..*\.xip\.io` will match `foo.bar.127.0.0.1.xip.io`, `foo.bar.10.0.2.2.xip.io` and all other given IPs. More information about this topic can be found in the nginx documentation about [`server_names`](http://nginx.org/en/docs/http/server_names.html).
 
+### Multiple Networks
+
+With the addition of [overlay networking](https://docs.docker.com/engine/userguide/networking/get-started-overlay/) in Docker 1.9, your `nginx-proxy` container may need to connect to backend containers on multiple networks. By default, if you don't pass the `--net` flag when your `nginx-proxy` container is created, it will only be attached to the default `bridge` network. This means that it will not be able to connect to containers on networks other than `bridge`.
+
+If you want your `nginx-proxy` container to be attached to a different network, you must pass the `--net=my-network` option in your `docker create` or `docker run` command. At the time of this writing, only a single network can be specified at container creation time. To attach to other networks, you can use the `docker network connect` command after your container is created:
+
+```console
+$ docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro \
+    --name my-nginx-proxy --net my-network jwilder/nginx-proxy
+$ docker network connect my-other-network my-nginx-proxy
+```
+
+In this example, the `my-nginx-proxy` container will be connected to `my-network` and `my-other-network` and will be able to proxy to other containers attached to those networks.
+
+### Internet vs. Local Network Access
+
+If you allow traffic from the public internet to access your `nginx-proxy` container, you may want to restrict some containers to the internal network only, so they cannot be accessed from the public internet.  On containers that should be restricted to the internal network, you should set the environment variable `NETWORK_ACCESS=internal`.  By default, the *internal* network is defined as `127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16`.  To change the list of networks considered internal, mount a file on the `nginx-proxy` at `/etc/nginx/network_internal.conf` with these contents, edited to suit your needs:
+
+```
+# These networks are considered "internal"
+allow 127.0.0.0/8;
+allow 10.0.0.0/8;
+allow 192.168.0.0/16;
+allow 172.16.0.0/12;
+
+# Traffic from all other networks will be rejected
+deny all;
+```
+
+When internal-only access is enabled, external clients with be denied with an `HTTP 403 Forbidden`
+
+> If there is a load-balancer / reverse proxy in front of `nginx-proxy` that hides the client IP (example: AWS Application/Elastic Load Balancer), you will need to use the nginx `realip` module (already installed) to extract the client's IP from the HTTP request headers.  Please see the [nginx realip module configuration](http://nginx.org/en/docs/http/ngx_http_realip_module.html) for more details.  This configuration can be added to a new config file and mounted in `/etc/nginx/conf.d/`.
+
 ### SSL Backends
 
-If you would like to connect to your backend using HTTPS instead of HTTP, set `VIRTUAL_PROTO=https` on the backend container.
+If you would like the reverse proxy to connect to your backend using HTTPS instead of HTTP, set `VIRTUAL_PROTO=https` on the backend container.
+
+> Note: If you use `VIRTUAL_PROTO=https` and your backend container exposes port 80 and 443, `nginx-proxy` will use HTTPS on port 80.  This is almost certainly not what you want, so you should also include `VIRTUAL_PORT=443`.
+
+### uWSGI Backends
+
+If you would like to connect to uWSGI backend, set `VIRTUAL_PROTO=uwsgi` on the
+backend container. Your backend container should then listen on a port rather
+than a socket and expose that port.
+
+### FastCGI Backends
+ 
+If you would like to connect to FastCGI backend, set `VIRTUAL_PROTO=fastcgi` on the
+backend container. Your backend container should then listen on a port rather
+than a socket and expose that port.
+ 
+### FastCGI Filr Root Directory
+
+If you use fastcgi,you can set `VIRTUAL_ROOT=xxx`  for your root directory
+
 
 ### Default Host
 
@@ -449,6 +152,14 @@ image and the official [nginx](https://registry.hub.docker.com/_/nginx/) image.
 
 You may want to do this to prevent having the docker socket bound to a publicly exposed container service.
 
+You can demo this pattern with docker-compose:
+
+```console
+$ docker-compose --file docker-compose-separate-containers.yml up
+$ curl -H "Host: whoami.local" localhost
+I'm 5b129ab83266
+```
+
 To run nginx proxy as a separate container you'll need to have [nginx.tmpl](https://github.com/jwilder/nginx-proxy/blob/master/nginx.tmpl) on your host system.
 
 First start nginx with a volume:
@@ -462,12 +173,15 @@ Then start the docker-gen container with the shared volume and template:
 $ docker run --volumes-from nginx \
     -v /var/run/docker.sock:/tmp/docker.sock:ro \
     -v $(pwd):/etc/docker-gen/templates \
-    -t jwilder/docker-gen -notify-sighup nginx -watch -only-exposed /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+    -t jwilder/docker-gen -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
 ```
 
 Finally, start your containers with `VIRTUAL_HOST` environment variables.
 
     $ docker run -e VIRTUAL_HOST=foo.bar.com  ...
+### SSL Support using letsencrypt
+
+[letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) is a lightweight companion container for the nginx-proxy. It allow the creation/renewal of Let's Encrypt certificates automatically. 
 
 ### SSL Support
 
@@ -483,15 +197,37 @@ hosts in use.  The certificate and keys should be named after the virtual host w
 `.key` extension.  For example, a container with `VIRTUAL_HOST=foo.bar.com` should have a
 `foo.bar.com.crt` and `foo.bar.com.key` file in the certs directory.
 
+If you are running the container in a virtualized environment (Hyper-V, VirtualBox, etc...),
+/path/to/certs must exist in that environment or be made accessible to that environment.
+By default, Docker is not able to mount directories on the host machine to containers running in a virtual machine.
+
 #### Diffie-Hellman Groups
 
-If you have Diffie-Hellman groups enabled, the files should be named after the virtual host with a
+Diffie-Hellman groups are enabled by default, with a pregenerated key in `/etc/nginx/dhparam/dhparam.pem`.
+You can mount a different `dhparam.pem` file at that location to override the default cert.
+To use custom `dhparam.pem` files per-virtual-host, the files should be named after the virtual host with a
 `dhparam` suffix and `.pem` extension. For example, a container with `VIRTUAL_HOST=foo.bar.com`
-should have a `foo.bar.com.dhparam.pem` file in the certs directory.
+should have a `foo.bar.com.dhparam.pem` file in the `/etc/nginx/certs` directory.
+
+> NOTE: If you don't mount a `dhparam.pem` file at `/etc/nginx/dhparam/dhparam.pem`, one will be generated
+at startup.  Since it can take minutes to generate a new `dhparam.pem`, it is done at low priority in the
+background.  Once generation is complete, the `dhparam.pem` is saved on a persistent volume and nginx
+is reloaded.  This generation process only occurs the first time you start `nginx-proxy`.
+
+> COMPATIBILITY WARNING: The default generated `dhparam.pem` key is 2048 bits for A+ security.  Some 
+> older clients (like Java 6 and 7) do not support DH keys with over 1024 bits.  In order to support these
+> clients, you must either provide your own `dhparam.pem`, or tell `nginx-proxy` to generate a 1024-bit
+> key on startup by passing `-e DHPARAM_BITS=1024`.
+
+In the separate container setup, no pregenerated key will be available and neither the
+[jwilder/docker-gen](https://index.docker.io/u/jwilder/docker-gen/) image nor the offical
+[nginx](https://registry.hub.docker.com/_/nginx/) image will generate one. If you still want A+ security
+in a separate container setup, you'll have to generate a 2048 bits DH key file manually and mount it on the
+nginx container, at `/etc/nginx/dhparam/dhparam.pem`.
 
 #### Wildcard Certificates
 
-Wildcard certificates and keys should be name after the domain name with a `.crt` and `.key` extension.
+Wildcard certificates and keys should be named after the domain name with a `.crt` and `.key` extension.
 For example `VIRTUAL_HOST=foo.bar.com` would use cert name `bar.com.crt` and `bar.com.key`.
 
 #### SNI
@@ -501,14 +237,39 @@ to identify the certificate to be used.  For example, a certificate for `*.foo.c
 could be named `shared.crt` and `shared.key`.  A container running with `VIRTUAL_HOST=foo.bar.com`
 and `CERT_NAME=shared` will then use this shared cert.
 
+#### OCSP Stapling
+To enable OCSP Stapling for a domain, `nginx-proxy` looks for a PEM certificate containing the trusted
+CA certificate chain at `/etc/nginx/certs/<domain>.chain.pem`, where `<domain>` is the domain name in
+the `VIRTUAL_HOST` directive.  The format of this file is a concatenation of the public PEM CA
+certificates starting with the intermediate CA most near the SSL certificate, down to the root CA.  This is
+often referred to as the "SSL Certificate Chain".  If found, this filename is passed to the NGINX
+[`ssl_trusted_certificate` directive](http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_trusted_certificate)
+and OCSP Stapling is enabled.
+
 #### How SSL Support Works
 
-The SSL cipher configuration is based on [mozilla nginx intermediate profile](https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx) which
+The default SSL cipher configuration is based on the [Mozilla intermediate profile](https://wiki.mozilla.org/Security/Server_Side_TLS#Intermediate_compatibility_.28default.29) which
 should provide compatibility with clients back to Firefox 1, Chrome 1, IE 7, Opera 5, Safari 1,
-Windows XP IE8, Android 2.3, Java 7.  The configuration also enables HSTS, and SSL
-session caches.
+Windows XP IE8, Android 2.3, Java 7.  Note that the DES-based TLS ciphers were removed for security.
+The configuration also enables HSTS, PFS, OCSP stapling and SSL session caches.  Currently TLS 1.0, 1.1 and 1.2
+are supported.  TLS 1.0 is deprecated but its end of life is not until June 30, 2018.  It is being
+included because the following browsers will stop working when it is removed: Chrome < 22, Firefox < 27,
+IE < 11, Safari < 7, iOS < 5, Android Browser < 5.
 
-The behavior for the proxy when port 80 and 443 are exposed is as follows:
+If you don't require backward compatibility, you can use the [Mozilla modern profile](https://wiki.mozilla.org/Security/Server_Side_TLS#Modern_compatibility)
+profile instead by including the environment variable `SSL_POLICY=Mozilla-Modern` to your container.
+This profile is compatible with clients back to Firefox 27, Chrome 30, IE 11 on Windows 7,
+Edge, Opera 17, Safari 9, Android 5.0, and Java 8.
+
+Other policies available through the `SSL_POLICY` environment variable are [`Mozilla-Old`](https://wiki.mozilla.org/Security/Server_Side_TLS#Old_backward_compatibility)
+and the [AWS ELB Security Policies](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html)
+`AWS-TLS-1-2-2017-01`, `AWS-TLS-1-1-2017-01`, `AWS-2016-08`, `AWS-2015-05`, `AWS-2015-03` and `AWS-2015-02`.
+
+Note that the `Mozilla-Old` policy should use a 1024 bits DH key for compatibility but this container generates
+a 2048 bits key. The [Diffie-Hellman Groups](#diffie-hellman-groups) section details different methods of bypassing
+this, either globally or per virtual-host.
+
+The default behavior for the proxy when port 80 and 443 are exposed is as follows:
 
 * If a container has a usable cert, port 80 will redirect to 443 for that container so that HTTPS
 is always preferred when available.
@@ -517,11 +278,28 @@ is always preferred when available.
 Note that in the latter case, a browser may get an connection error as no certificate is available
 to establish a connection.  A self-signed or generic cert named `default.crt` and `default.key`
 will allow a client browser to make a SSL connection (likely w/ a warning) and subsequently receive
-a 503.
+a 500.
+
+To serve traffic in both SSL and non-SSL modes without redirecting to SSL, you can include the
+environment variable `HTTPS_METHOD=noredirect` (the default is `HTTPS_METHOD=redirect`).  You can also
+disable the non-SSL site entirely with `HTTPS_METHOD=nohttp`, or disable the HTTPS site with 
+`HTTPS_METHOD=nohttps`. `HTTPS_METHOD` must be specified on each container for which you want to 
+override the default behavior.  If `HTTPS_METHOD=noredirect` is used, Strict Transport Security (HSTS) 
+is disabled to prevent HTTPS users from being redirected by the client.  If you cannot get to the HTTP 
+site after changing this setting, your browser has probably cached the HSTS policy and is automatically 
+redirecting you back to HTTPS.  You will need to clear your browser's HSTS cache or use an incognito 
+window / different browser.
+
+By default, [HTTP Strict Transport Security (HSTS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security) 
+is enabled with `max-age=31536000` for HTTPS sites.  You can disable HSTS with the environment variable 
+`HSTS=off` or use a custom HSTS configuration like `HSTS=max-age=31536000; includeSubDomains; preload`.  
+*WARNING*: HSTS will force your users to visit the HTTPS version of your site for the `max-age` time - 
+even if they type in `http://` manually.  The only way to get to an HTTP site after receiving an HSTS 
+response is to clear your browser's HSTS cache.
 
 ### Basic Authentication Support
 
-In order to be able to securize your virtual host, you have to create a file named as its equivalent VIRTUAL_HOST variable on directory
+In order to be able to secure your virtual host, you have to create a file named as its equivalent VIRTUAL_HOST variable on directory
 /etc/nginx/htpasswd/$VIRTUAL_HOST
 
 ```
@@ -532,11 +310,37 @@ $ docker run -d -p 80:80 -p 443:443 \
     jwilder/nginx-proxy
 ```
 
-You'll need apache2-utils on the machine you plan to create de htpasswd file. Follow these [instructions](http://httpd.apache.org/docs/2.2/programs/htpasswd.html)
+You'll need apache2-utils on the machine where you plan to create the htpasswd file. Follow these [instructions](http://httpd.apache.org/docs/2.2/programs/htpasswd.html)
 
 ### Custom Nginx Configuration
 
 If you need to configure Nginx beyond what is possible using environment variables, you can provide custom configuration files on either a proxy-wide or per-`VIRTUAL_HOST` basis.
+
+#### Replacing default proxy settings
+
+If you want to replace the default proxy settings for the nginx container, add a configuration file at `/etc/nginx/proxy.conf`. A file with the default settings would
+look like this:
+
+```Nginx
+# HTTP 1.1 support
+proxy_http_version 1.1;
+proxy_buffering off;
+proxy_set_header Host $http_host;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection $proxy_connection;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
+proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
+
+# Mitigate httpoxy attack (see README for details)
+proxy_set_header Proxy "";
+```
+
+***NOTE***: If you provide this file it will replace the defaults; you may want to check the .tmpl file to make sure you have all of the needed options.
+
+***NOTE***: The default configuration blocks the `Proxy` HTTP request header from being sent to downstream servers.  This prevents attackers from using the so-called [httpoxy attack](http://httpoxy.org).  There is no legitimate reason for a client to send this header, and there are many vulnerable languages / platforms (`CVE-2016-5385`, `CVE-2016-5386`, `CVE-2016-5387`, `CVE-2016-5388`, `CVE-2016-1000109`, `CVE-2016-1000110`, `CERT-VU#797896`).
 
 #### Proxy-wide
 
@@ -558,7 +362,7 @@ Or it can be done by mounting in your custom configuration in your `docker run` 
 
 #### Per-VIRTUAL_HOST
 
-To add settings on a per-`VIRTUAL_HOST` basis, add your configuration file under `/etc/nginx/vhost.d`. Unlike in the proxy-wide case, which allows mutliple config files with any name ending in `.conf`, the per-`VIRTUAL_HOST` file must be named exactly after the `VIRTUAL_HOST`.
+To add settings on a per-`VIRTUAL_HOST` basis, add your configuration file under `/etc/nginx/vhost.d`. Unlike in the proxy-wide case, which allows multiple config files with any name ending in `.conf`, the per-`VIRTUAL_HOST` file must be named exactly after the `VIRTUAL_HOST`.
 
 In order to allow virtual hosts to be dynamically configured as backends are added and removed, it makes the most sense to mount an external directory as `/etc/nginx/vhost.d` as opposed to using derived images or mounting individual configuration files.
 
@@ -570,4 +374,59 @@ For example, if you have a virtual host named `app.example.com`, you could provi
 If you are using multiple hostnames for a single container (e.g. `VIRTUAL_HOST=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
 
     $ { echo 'server_tokens off;'; echo 'client_max_body_size 100m;'; } > /path/to/vhost.d/www.example.com
-    $ ln -s www.example.com /path/to/vhost.d/example.com
+    $ ln -s /path/to/vhost.d/www.example.com /path/to/vhost.d/example.com
+
+#### Per-VIRTUAL_HOST default configuration
+
+If you want most of your virtual hosts to use a default single configuration and then override on a few specific ones, add those settings to the `/etc/nginx/vhost.d/default` file. This file
+will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{VIRTUAL_HOST}` file associated with it.
+
+#### Per-VIRTUAL_HOST location configuration
+
+To add settings to the "location" block on a per-`VIRTUAL_HOST` basis, add your configuration file under `/etc/nginx/vhost.d`
+just like the previous section except with the suffix `_location`.
+
+For example, if you have a virtual host named `app.example.com` and you have configured a proxy_cache `my-cache` in another custom file, you could tell it to use a proxy cache as follows:
+
+    $ docker run -d -p 80:80 -p 443:443 -v /path/to/vhost.d:/etc/nginx/vhost.d:ro -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy
+    $ { echo 'proxy_cache my-cache;'; echo 'proxy_cache_valid  200 302  60m;'; echo 'proxy_cache_valid  404 1m;' } > /path/to/vhost.d/app.example.com_location
+
+If you are using multiple hostnames for a single container (e.g. `VIRTUAL_HOST=example.com,www.example.com`), the virtual host configuration file must exist for each hostname. If you would like to use the same configuration for multiple virtual host names, you can use a symlink:
+
+    $ { echo 'proxy_cache my-cache;'; echo 'proxy_cache_valid  200 302  60m;'; echo 'proxy_cache_valid  404 1m;' } > /path/to/vhost.d/app.example.com_location
+    $ ln -s /path/to/vhost.d/www.example.com /path/to/vhost.d/example.com
+
+#### Per-VIRTUAL_HOST location default configuration
+
+If you want most of your virtual hosts to use a default single `location` block configuration and then override on a few specific ones, add those settings to the `/etc/nginx/vhost.d/default_location` file. This file
+will be used on any virtual host which does not have a `/etc/nginx/vhost.d/{VIRTUAL_HOST}_location` file associated with it.
+
+### Contributing
+
+Before submitting pull requests or issues, please check github to make sure an existing issue or pull request is not already open.
+
+#### Running Tests Locally
+
+To run tests, you need to prepare the docker image to test which must be tagged `jwilder/nginx-proxy:test`:
+
+    docker build -t jwilder/nginx-proxy:test .  # build the Debian variant image
+    
+and call the [test/pytest.sh](test/pytest.sh) script.
+
+Then build the Alpine variant of the image:
+
+    docker build -f Dockerfile.alpine -t jwilder/nginx-proxy:test .  # build the Alpline variant image
+
+and call the [test/pytest.sh](test/pytest.sh) script again.
+
+
+If your system has the `make` command, you can automate those tasks by calling:
+
+    make test
+    
+
+You can learn more about how the test suite works and how to write new tests in the [test/README.md](test/README.md) file.
+
+### Need help?
+
+If you have questions on how to use the image, please ask them on the [Q&A Group](https://groups.google.com/forum/#!forum/nginx-proxy)
