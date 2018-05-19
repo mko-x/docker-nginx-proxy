@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This image is deprecated in favor of jwilder's original proxy [github repo](https://github.com/jwilder/nginx-proxy).
+
 # docker-nginx-proxy
 
 ![nginx logo](https://bebrand.de/l/nginx.png)
