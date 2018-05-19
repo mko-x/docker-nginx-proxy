@@ -3,8 +3,15 @@ LABEL maintainer="Jason Wilder mail@jasonwilder.com"
 
 # Install wget and install/updates certificates
 RUN apk add --no-cache --virtual .run-deps \
-    ca-certificates bash wget openssl \
+    ca-certificates bash wget openssl nano \
     && update-ca-certificates
+
+RUN { \
+      echo 'client_max_body_size 0;'; \
+    } > /etc/nginx/conf.d/unrestricted_client_body_size.conf && \
+    { \
+      echo 'client_body_buffer_size 1000m;'; \
+    } > /etc/nginx/conf.d/increased_client_body_buffer_size.conf
 
 
 # Configure Nginx and apply fix for very long server names
